@@ -159,4 +159,6 @@ public interface PluginLocale {
 	 */
 	boolean fileExists();
 
+	ConfigTypes getType();
+
 }

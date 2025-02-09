@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -42,11 +41,11 @@ import org.spongepowered.api.event.impl.AbstractEvent;
 import org.spongepowered.api.event.lifecycle.ConstructPluginEvent;
 import org.spongepowered.api.event.lifecycle.RegisterBuilderEvent;
 import org.spongepowered.api.event.lifecycle.StartedEngineEvent;
+import org.spongepowered.api.event.lifecycle.StoppingEngineEvent;
 import org.spongepowered.api.item.ItemTypes;
 import org.spongepowered.api.item.inventory.ItemStack;
 import org.spongepowered.api.network.ServerConnectionState;
 import org.spongepowered.api.registry.RegistryTypes;
-import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.statistic.Statistic;
@@ -63,6 +62,7 @@ import com.google.inject.Inject;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
+
 import sawfowl.localeapi.ImplementAPI.API;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
@@ -124,9 +124,7 @@ public class LocaleAPI {
 		LocaleServiseEvent.Started startedEvent = new StartedEvent();
 		Sponge.eventManager().post(startedEvent);
 		isPresentRegistry  = RegistryTypes.CURRENCY.find().isPresent();
-		Sponge.asyncScheduler().submit(Task.builder().plugin(container).delay(5, TimeUnit.SECONDS).execute(() -> 
-			((API) localeService).startWatch()
-		).build());
+		((API) localeService).startWatch();
 	}
 
 	@Listener(order = Order.FIRST)
@@ -137,6 +135,11 @@ public class LocaleAPI {
 				return new TextImpl().builder();
 			}
 		});
+	}
+
+	@Listener
+	public void onStop(StoppingEngineEvent<Server> event) {
+		ImplementAPI.stopWatch();
 	}
 
 	public static PluginContainer getPluginContainer() {

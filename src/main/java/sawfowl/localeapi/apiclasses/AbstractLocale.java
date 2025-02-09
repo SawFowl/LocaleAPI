@@ -43,8 +43,6 @@ public abstract class AbstractLocale implements PluginLocale {
 		setDefaultReference();
 	}
 
-	abstract ConfigTypes getType();
-
 	abstract void setComment(String comment, Object... path);
 
 	@Override

@@ -30,7 +30,7 @@ public class YamlLocale extends AbstractLocale {
 	}
 
 	@Override
-	ConfigTypes getType() {
+	public ConfigTypes getType() {
 		return ConfigTypes.YAML;
 	}
 

@@ -29,7 +29,7 @@ public class HoconLocale extends AbstractLocale {
 	}
 
 	@Override
-	ConfigTypes getType() {
+	public ConfigTypes getType() {
 		return ConfigTypes.HOCON;
 	}
 

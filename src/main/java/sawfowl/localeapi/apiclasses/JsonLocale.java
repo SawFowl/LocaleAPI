@@ -30,7 +30,7 @@ public class JsonLocale extends AbstractLocale {
 	}
 
 	@Override
-	ConfigTypes getType() {
+	public ConfigTypes getType() {
 		return ConfigTypes.JSON;
 	}
 

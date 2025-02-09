@@ -56,7 +56,7 @@ public class LegacyLocale extends AbstractLocale {
 	}
 
 	@Override
-	ConfigTypes getType() {
+	public ConfigTypes getType() {
 		return ConfigTypes.PROPERTIES;
 	}
 

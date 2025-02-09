@@ -31,7 +31,7 @@ import sawfowl.localeapi.apiclasses.HoconLocale;
 import sawfowl.localeapi.apiclasses.JsonLocale;
 import sawfowl.localeapi.apiclasses.LegacyLocale;
 import sawfowl.localeapi.apiclasses.YamlLocale;
-import sawfowl.localeapi.utils.WatchThread;
+import sawfowl.localeapi.utils.WatchRunner;
 
 public class ImplementAPI {
 
@@ -45,18 +45,21 @@ public class ImplementAPI {
 		return new API(logger, path);
 	}
 
+	static void stopWatch() {
+		((API) service).watchThread.stopWatch();
+	}
+
 	class API implements LocaleService {
 
 		private Map<String, Map<Locale, PluginLocale>> pluginLocales;
 		private Map<String, Integer> stackSerializers;
 		private Map<String, Class<? extends LocaleReference>> defaultReferences;
 		private List<Locale> locales;
-		private WatchThread watchThread;
+		private WatchRunner watchThread;
 		private final Path configDirectory;
 		private final Logger logger;
 		private Locale system = Locale.getDefault();
 		private boolean allowSystem = false;
-
 		API(Logger logger, Path path) {
 			setInstaice();
 			this.logger = logger;
@@ -65,7 +68,8 @@ public class ImplementAPI {
 			stackSerializers = new HashMap<String, Integer>();
 			defaultReferences = new HashMap<String, Class<? extends LocaleReference>>();
 			locales = EnumLocales.getLocales();
-			watchThread = new WatchThread(this, logger, path);
+			WatchRunner.createInstance(this, logger, path);
+			watchThread = WatchRunner.getInstance();
 			allowSystem = locales.contains(system) || locales.stream().filter(locale -> (locale.toLanguageTag().equals(system.toLanguageTag()))).findFirst().isPresent();
 			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this);
 		}
@@ -74,8 +78,8 @@ public class ImplementAPI {
 			service = this;
 		}
 
-		private void updateWatch(String pluginID) {
-			watchThread.getWatchLocales().addPluginData(pluginID);
+		private void updateWatch(PluginContainer pluginID) {
+			WatchRunner.initPlugin(pluginID);
 		}
 
 		private String getPluginID(PluginContainer plugin) {
@@ -152,6 +156,7 @@ public class ImplementAPI {
 		public void saveAssetLocales(PluginContainer plugin) {
 			String pluginID = getPluginID(plugin);
 			saveAssetLocales(pluginID);
+			updateWatch(plugin);
 		}
 
 		public void saveAssetLocales(String pluginID) {
@@ -164,7 +169,7 @@ public class ImplementAPI {
 			if(!pluginLocales.containsKey(pluginID)) pluginLocales.put(pluginID, new HashMap<Locale, PluginLocale>());
 			for(Locale locale : this.locales) saveAssets(pluginID, locale);
 			localesExist(pluginID);
-			updateWatch(pluginID);
+			Sponge.pluginManager().plugin(pluginID).ifPresent(plugin -> updateWatch(plugin));
 		}
 
 		public PluginLocale createPluginLocale(PluginContainer plugin, ConfigTypes configType, Locale locale) {
@@ -188,7 +193,7 @@ public class ImplementAPI {
 			} else if(configType.equals(ConfigTypes.PROPERTIES)) {
 				addPluginLocale(pluginID, locale, new LegacyLocale(this, logger, configDirectory, pluginID, locale.toLanguageTag()));
 			}
-			updateWatch(pluginID);
+			Sponge.pluginManager().plugin(pluginID).ifPresent(plugin -> updateWatch(plugin));
 			return getPluginLocales(pluginID).get(locale);
 		}
 
@@ -220,7 +225,7 @@ public class ImplementAPI {
 
 		@Listener(order = Order.LAST)
 		public void onCompleteLoad(StartedEngineEvent<Server> event) {
-			watchThread.start();
+			watchThread.enable();
 		}
 
 		@Listener
@@ -262,7 +267,7 @@ public class ImplementAPI {
 		}
 
 		void startWatch() {
-			watchThread.getWatchLocales().unfreeze();
+			watchThread.run();
 		}
 
 	}

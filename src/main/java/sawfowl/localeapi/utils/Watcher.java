@@ -16,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.event.Cause;
+import org.spongepowered.api.event.EventContext;
+import org.spongepowered.api.event.EventContextKeys;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.plugin.PluginContainer;
@@ -25,6 +28,8 @@ import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.EnumLocales;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
+import sawfowl.localeapi.api.PluginLocale;
+import sawfowl.localeapi.api.event.LocaleEvent;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -40,10 +45,14 @@ class Watcher {
 	private LocaleService localeService;
 	private Logger logger;
 	private Path configDirectory;
+	private Cause cause;
+	private PluginContainer pluginContainer;
 	Watcher(LocaleService localeService, Logger logger, Path path) {
 		this.localeService = localeService;
 		this.logger = logger;
 		configDirectory = path;
+		pluginContainer = LocaleAPI.getPluginContainer();
+		cause = Cause.of(EventContext.builder().add(EventContextKeys.PLUGIN, pluginContainer).build(), pluginContainer);
 		try {
 			watchService = FileSystems.getDefault().newWatchService();
 		} catch (IOException e) {
@@ -109,7 +118,30 @@ class Watcher {
 		} if(event.kind() == ENTRY_DELETE && locale != Locales.DEFAULT) Sponge.asyncScheduler().submit(Task.builder().delay(200, TimeUnit.MILLISECONDS).plugin(LocaleAPI.getPluginContainer()).execute(() -> {
 			if(path.resolve(fileName).toFile().exists()) return;
 			localeService.getPluginLocales(container).remove(locale);
-			logger.info("[FileWatcher] The \"" + locale.toLanguageTag() + type.toString() + "\" localization for the \"" + container.metadata().id() + "\" has been removed!");
+			logger.info("[FileWatcher] The \"" + locale.toLanguageTag() + "\" localization for the \"" + container.metadata().id() + "\" has been removed!");
+			Sponge.eventManager().post(new LocaleEvent.Delete() {
+
+				@Override
+				public Cause cause() {
+					return cause;
+				}
+
+				@Override
+				public String plugin() {
+					return container.metadata().id();
+				}
+
+				@Override
+				public Locale getLocale() {
+					return locale;
+				}
+
+				@Override
+				public String getFileName() {
+					return fileName;
+				}
+
+			});
 		}).build());
 	}
 
@@ -119,20 +151,70 @@ class Watcher {
 
 	private void create(PluginContainer container, Locale locale, ConfigTypes type, long time) {
 		logger.info("[FileWatcher] Added a new localization file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\"! Loading...");
-		localeService.createPluginLocale(container, type, locale);
+		PluginLocale pluginLocale = localeService.createPluginLocale(container, type, locale);
+		Sponge.eventManager().post(new LocaleEvent.Create() {
+
+			@Override
+			public Cause cause() {
+				return cause;
+			}
+
+			@Override
+			public String plugin() {
+				return container.metadata().id();
+			}
+
+			@Override
+			public PluginLocale getLocaleConfig() {
+				return pluginLocale;
+			}
+
+			@Override
+			public Locale getLocale() {
+				return locale;
+			}
+
+			@Override
+			public String configType() {
+				return type.getExtension();
+			}
+
+		});
 		this.updateInfo.add(new UpdateInfo(time, locale, container));
 	}
 
 	private void onModify(PluginContainer container, Locale locale, ConfigTypes type) {
 		UpdateInfo updateInfo = this.updateInfo.stream().filter(info -> info.locale.equals(locale) && info.container.metadata().id().equals(container.metadata().id())).findFirst().orElse(null);
-		if(updateInfo != null) {
-			if(System.currentTimeMillis() - updateInfo.time < 1000) this.updateInfo.remove(updateInfo);
-		} else {
+		if(updateInfo == null) {
 			if(!localeService.getPluginLocales(container).containsKey(locale) || localeService.getPluginLocales(container).get(locale).getType() != type) return;
-			localeService.getPluginLocales(container).get(locale).reload();
+			PluginLocale pluginLocale = localeService.getPluginLocales(container).get(locale);
+			pluginLocale.reload();
 			this.updateInfo.add(new UpdateInfo(System.currentTimeMillis(), locale, container));
 			logger.info("[FileWatcher] Locale file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\" has been changed! Reloading...");
-		}
+			Sponge.eventManager().post(new LocaleEvent.Reload() {
+
+				@Override
+				public Cause cause() {
+					return cause;
+				}
+
+				@Override
+				public String plugin() {
+					return container.metadata().id();
+				}
+
+				@Override
+				public PluginLocale getLocaleConfig() {
+					return pluginLocale;
+				}
+
+				@Override
+				public Locale getLocale() {
+					return locale;
+				}
+
+			});
+		} else this.updateInfo.remove(updateInfo);
 	}
 
 	private boolean isValidFile(String fileName, String extension) {

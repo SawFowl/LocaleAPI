@@ -12,14 +12,24 @@ public interface LocaleEvent extends Event {
 
 		public String configType();
 
+		public PluginLocale getLocaleConfig();
+
 	}
 
-	public interface Reload extends LocaleEvent {}
+	public interface Reload extends LocaleEvent {
+
+		public PluginLocale getLocaleConfig();
+
+	}
+
+	public interface Delete extends LocaleEvent {
+
+		String getFileName();
+
+	}
 
 	public String plugin();
 
 	public Locale getLocale();
-
-	public PluginLocale getLocaleConfig();
 
 }

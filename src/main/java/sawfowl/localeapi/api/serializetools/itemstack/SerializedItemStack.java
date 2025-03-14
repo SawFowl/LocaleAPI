@@ -141,19 +141,17 @@ public class SerializedItemStack implements PluginComponent {
 			itemStack = ItemStack.of(getItemType().get());
 			itemStack.setQuantity(itemQuantity);
 			if(itemContainer == null) itemContainer = itemStack.toContainer();
-			if(nbt != null && !nbt.equals("")) {
-				try {
-					if(nbt != null && !nbt.equals("")) {
-						itemContainer.set(DataQuery.of("UnsafeData"), DataFormats.JSON.get().read(nbt));
-					}
-					if(components != null && !components.equals("")) {
-						itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(components));
-					} else if(jsonComponents != null && !jsonComponents.isEmpty()) {
-						itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(jsonComponents.toString()));
-					}
-				} catch (InvalidDataException | IOException e) {
-					e.printStackTrace();
+			try {
+				if(nbt != null && !nbt.equals("")) {
+					itemContainer.set(DataQuery.of("UnsafeData"), DataFormats.JSON.get().read(nbt));
 				}
+				if(components != null && !components.equals("")) {
+					itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(components));
+				} else if(jsonComponents != null && !jsonComponents.isEmpty()) {
+					itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(jsonComponents.toString()));
+				}
+			} catch (InvalidDataException | IOException e) {
+				e.printStackTrace();
 			}
 			itemStack = ItemStack.builder().fromContainer(itemContainer).build();
 		} else itemStack = ItemStack.empty();
@@ -273,7 +271,7 @@ public class SerializedItemStack implements PluginComponent {
 			itemStack = null;
 			jsonComponents = null;
 			try {
-				components = DataFormats.JSON.get().write(itemContainer);
+				components = DataFormats.JSON.get().write((DataView) itemContainer.get(DataQuery.of(ComponentUtil.COMPONENTS)).get());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -335,7 +333,22 @@ public class SerializedItemStack implements PluginComponent {
 		@Override
 		public ComponentUtil removeComponent(PluginContainer container, String key) {
 			checkContainer();
-			if(itemContainer.contains(createPath(container, key))) itemContainer.remove(DataQuery.of(PLUGINCOMPONENTS, getPluginId(container), key));
+			if(itemContainer.contains(createPath(container, key))) itemContainer.remove(createPath(container, key));
+			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)))) {
+				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).get()).isEmpty()) {
+					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)));
+				}
+			}
+			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS))) {
+				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS)).get()).isEmpty()) {
+					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS));
+				}
+			}
+			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA))) {
+				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA)).get()).isEmpty()) {
+					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA));
+				}
+			}
 			updateNbt();
 			return this;
 		}

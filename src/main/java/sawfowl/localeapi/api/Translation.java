@@ -12,7 +12,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 
 @ConfigSerializable
-public interface LocaleReference {
+public interface Translation {
 
 	default Component deserialize(String string) {
 		return TextUtils.deserialize(string);

@@ -12,7 +12,7 @@ import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.LocaleReference;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
@@ -20,12 +20,12 @@ import sawfowl.localeapi.api.serializetools.SerializeOptions;
 public class YamlLocale extends AbstractLocale {
 
 	private YamlConfigurationLoader configLoader;
-	private ValueReference<LocaleReference, CommentedConfigurationNode> localeReference;
+	private ValueReference<Translation, CommentedConfigurationNode> localeReference;
 	private ConfigurationReference<CommentedConfigurationNode> configurationReference;
 	private CommentedConfigurationNode localeNode;
 	public YamlLocale(LocaleService localeService, Logger logger, Path path, String pluginID, String locale) {
 		super(localeService, logger, path, pluginID, locale);
-		configLoader = SerializeOptions.createYamlConfigurationLoader(localeService.getItemStackSerializerVariant(pluginID)).path(this.path).nodeStyle(NodeStyle.BLOCK).build();
+		configLoader = SerializeOptions.createYamlConfigurationLoader(localeService.getItemStackSerializer(pluginID)).path(this.path).nodeStyle(NodeStyle.BLOCK).build();
 		reload();
 	}
 
@@ -44,7 +44,7 @@ public class YamlLocale extends AbstractLocale {
 	public void reload() {
 		try {
 			localeNode = configLoader.load();
-			if(localeReference != null && configurationReference != null) localeReference = (ValueReference<LocaleReference, CommentedConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(localeReference.get().getClass());
+			if(localeReference != null && configurationReference != null) localeReference = (ValueReference<Translation, CommentedConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(localeReference.get().getClass());
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -73,17 +73,17 @@ public class YamlLocale extends AbstractLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException {
 		if(reference == null) return;
-		if(configLoader == null) configLoader = SerializeOptions.createYamlConfigurationLoader(localeService.getItemStackSerializerVariant(pluginID)).path(this.path).build();
-		localeReference = (ValueReference<LocaleReference, CommentedConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(reference);
+		if(configLoader == null) configLoader = SerializeOptions.createYamlConfigurationLoader(localeService.getItemStackSerializer(pluginID)).path(this.path).build();
+		localeReference = (ValueReference<Translation, CommentedConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(reference);
 		if(localeNode != null && !localeNode.empty()) localeReference.node().from(localeNode);
 		localeNode = localeReference.node();
 		if(addIfNotExist(asReference(reference), new Object[] {})) configLoader.save(localeNode);
 	}
 
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
 		setLocaleReference(reference.getClass());
 		localeReference.setAndSave(reference);
 		localeNode = localeReference.node();
@@ -92,7 +92,7 @@ public class YamlLocale extends AbstractLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends LocaleReference> T asReference(Class<T> clazz) {
+	public <T extends Translation> T asReference(Class<T> clazz) {
 		if(localeReference != null) return (T) localeReference.get();
 			try {
 				setLocaleReference(localeService.getDefaultReference(pluginID));

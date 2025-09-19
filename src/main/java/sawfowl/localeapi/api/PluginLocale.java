@@ -129,30 +129,30 @@ public interface PluginLocale {
 	 * Assign a serializable class to this localization.<br>
 	 * If no data has been previously written to this localization, it will be applied from the specified class.
 	 * 
-	 * @param <T> reference - The serializable class extends {@link LocaleReference}
+	 * @param <T> reference - The serializable class extends {@link Translation}
 	 * @throws SerializationException
 	 * @throws ConfigurateException
 	 */
-	<T extends LocaleReference> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException;
+	<T extends Translation> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException;
 
 	/**
 	 * Assign a serializable class to this localization.<br>
 	 * If no data has been previously written to this localization, it will be applied from the specified class.<br>
 	 * This method accepts the created class object and applies all the data written to it, as well as performs saving to disk.
 	 * 
-	 * @param <T> reference - The serializable class extends {@link LocaleReference}
+	 * @param <T> reference - The serializable class extends {@link Translation}
 	 * @throws SerializationException
 	 * @throws ConfigurateException
 	 */
-	<T extends LocaleReference> void setLocaleReference(T reference) throws SerializationException, ConfigurateException;
+	<T extends Translation> void setLocaleReference(T reference) throws SerializationException, ConfigurateException;
 
 	/**
 	 * Getting the serializable class from the given localization if it was previously assigned.
 	 * 
-	 * @param <T> clazz - The serializable class extends {@link LocaleReference}
+	 * @param <T> clazz - The serializable class extends {@link Translation}
 	 * @return Serializable class, or null if no class assignment was previously made.
 	 */
-	<T extends LocaleReference> T asReference(Class<T> clazz);
+	<T extends Translation> T asReference(Class<T> clazz);
 
 	/**
 	 * Checking for the existence of a localization file on disk.

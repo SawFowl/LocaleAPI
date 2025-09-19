@@ -2,12 +2,14 @@ package sawfowl.localeapi;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.spongepowered.api.Server;
@@ -21,10 +23,11 @@ import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.EnumLocales;
-import sawfowl.localeapi.api.LocaleReference;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.PluginLocale;
+import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
 import sawfowl.localeapi.apiclasses.AbstractLocale;
 import sawfowl.localeapi.apiclasses.HoconLocale;
@@ -52,8 +55,8 @@ public class ImplementAPI {
 	class API implements LocaleService {
 
 		private Map<String, Map<Locale, PluginLocale>> pluginLocales;
-		private Map<String, Integer> stackSerializers;
-		private Map<String, Class<? extends LocaleReference>> defaultReferences;
+		private Map<String, ItemStackSerializerType> stackSerializers;
+		private Map<String, Class<? extends Translation>> defaultReferences;
 		private List<Locale> locales;
 		private WatchRunner watchThread;
 		private final Path configDirectory;
@@ -65,13 +68,13 @@ public class ImplementAPI {
 			this.logger = logger;
 			configDirectory = path;
 			pluginLocales = new HashMap<String, Map<Locale, PluginLocale>>();
-			stackSerializers = new HashMap<String, Integer>();
-			defaultReferences = new HashMap<String, Class<? extends LocaleReference>>();
+			stackSerializers = new HashMap<String, ItemStackSerializerType>();
+			defaultReferences = new HashMap<String, Class<? extends Translation>>();
 			locales = EnumLocales.getLocales();
 			WatchRunner.createInstance(this, logger, path);
 			watchThread = WatchRunner.getInstance();
 			allowSystem = locales.contains(system) || locales.stream().filter(locale -> (locale.toLanguageTag().equals(system.toLanguageTag()))).findFirst().isPresent();
-			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this);
+			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.publicLookup());
 		}
 
 		private void setInstaice() {
@@ -207,14 +210,14 @@ public class ImplementAPI {
 				return false;
 			}
 			for(Locale locale : locales) {
-				if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".conf").toFile().exists() && SerializeOptions.createHoconConfigurationLoader(getItemStackSerializerVariant(pluginID)).path(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".conf")).build().canLoad()) {
+				if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".conf").toFile().exists() && SerializeOptions.createHoconConfigurationLoader(getItemStackSerializer(pluginID)).path(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".conf")).build().canLoad()) {
 					createPluginLocale(pluginID, ConfigTypes.HOCON, locale);
 				} else if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".json").toFile().exists() && 
 						SerializeOptions.createJsonConfigurationLoader(
-								getItemStackSerializerVariant(pluginID))
+								getItemStackSerializer(pluginID))
 						.path(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".json")).build().canLoad()) {
 					createPluginLocale(pluginID, ConfigTypes.JSON, locale);
-				} else if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".yml").toFile().exists() && SerializeOptions.createYamlConfigurationLoader(getItemStackSerializerVariant(pluginID)).path(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".yml")).build().canLoad()) {
+				} else if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".yml").toFile().exists() && SerializeOptions.createYamlConfigurationLoader(getItemStackSerializer(pluginID)).path(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".yml")).build().canLoad()) {
 					createPluginLocale(pluginID, ConfigTypes.YAML, locale);
 				} else if(configDirectory.resolve(pluginID + File.separator + locale.toLanguageTag() + ".properties").toFile().exists()) {
 					createPluginLocale(pluginID, ConfigTypes.PROPERTIES, locale);
@@ -235,34 +238,36 @@ public class ImplementAPI {
 		}
 
 		@Override
-		public void setItemStackSerializerVariant(PluginContainer container, int variant) throws Exception {
-			if(variant < 1 || variant > 3) throw new IllegalStateException("The value must not be less than 1 or greater than 3.");
+		public void setItemStackSerializerVariant(PluginContainer container, ItemStackSerializerType variant) throws Exception {
+			Objects.requireNonNull(container);
+			Objects.requireNonNull(variant);
 			if(stackSerializers.containsKey(container.metadata().id())) stackSerializers.remove(container.metadata().id());
 			stackSerializers.put(container.metadata().id(), variant);
 		}
 
 		@Override
-		public int getItemStackSerializerVariant(PluginContainer container) {
-			return getItemStackSerializerVariant(container.metadata().id());
+		public ItemStackSerializerType getItemStackSerializer(PluginContainer container) {
+			Objects.requireNonNull(container);
+			return getItemStackSerializer(container.metadata().id());
 		}
 
-		public int getItemStackSerializerVariant(String plugin) {
-			return stackSerializers.getOrDefault(plugin, 1);
+		public ItemStackSerializerType getItemStackSerializer(String plugin) {
+			return stackSerializers.getOrDefault(plugin, ItemStackSerializerType.SPONGE);
 		}
 
 		@Override
-		public <T extends LocaleReference> void setDefaultReference(PluginContainer container, Class<T> defaultReference) {
+		public <T extends Translation> void setDefaultReference(PluginContainer container, Class<T> defaultReference) {
 			if(defaultReferences.containsKey(container.metadata().id())) defaultReferences.remove(container.metadata().id());
 			defaultReferences.put(container.metadata().id(), defaultReference);
 		}
 
 		@Override
-		public Class<? extends LocaleReference> getDefaultReference(PluginContainer container) {
+		public Class<? extends Translation> getDefaultReference(PluginContainer container) {
 			return getDefaultReference(container.metadata().id());
 		}
 
 		@Override
-		public Class<? extends LocaleReference> getDefaultReference(String pluginID) {
+		public Class<? extends Translation> getDefaultReference(String pluginID) {
 			return defaultReferences.containsKey(pluginID) ? defaultReferences.get(pluginID) : null;
 		}
 

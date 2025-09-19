@@ -12,7 +12,7 @@ import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.configurate.serialize.SerializationException;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.LocaleReference;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
@@ -20,12 +20,12 @@ import sawfowl.localeapi.api.serializetools.SerializeOptions;
 public class JsonLocale extends AbstractLocale {
 
 	private GsonConfigurationLoader configLoader;
-	private ValueReference<LocaleReference, BasicConfigurationNode> localeReference;
+	private ValueReference<Translation, BasicConfigurationNode> localeReference;
 	private ConfigurationReference<BasicConfigurationNode> configurationReference;
 	private ConfigurationNode localeNode;
 	public JsonLocale(LocaleService localeService, Logger logger, Path path, String pluginID, String locale) {
 		super(localeService, logger, path, pluginID, locale);
-		configLoader = SerializeOptions.createJsonConfigurationLoader(localeService.getItemStackSerializerVariant(pluginID)).path(this.path).build();
+		configLoader = SerializeOptions.createJsonConfigurationLoader(localeService.getItemStackSerializer(pluginID)).path(this.path).build();
 		reload();
 	}
 
@@ -42,7 +42,7 @@ public class JsonLocale extends AbstractLocale {
 	public void reload() {
 		try {
 			localeNode = configLoader.load();
-			if(localeReference != null && configurationReference != null) localeReference = (ValueReference<LocaleReference, BasicConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(localeReference.get().getClass());
+			if(localeReference != null && configurationReference != null) localeReference = (ValueReference<Translation, BasicConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(localeReference.get().getClass());
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -71,17 +71,17 @@ public class JsonLocale extends AbstractLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(Class<T> reference) throws SerializationException, ConfigurateException {
 		if(reference == null) return;
-		if(configLoader == null) configLoader = SerializeOptions.createJsonConfigurationLoader(localeService.getItemStackSerializerVariant(pluginID)).path(this.path).build();
-		localeReference = (ValueReference<LocaleReference, BasicConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(reference);
+		if(configLoader == null) configLoader = SerializeOptions.createJsonConfigurationLoader(localeService.getItemStackSerializer(pluginID)).path(this.path).build();
+		localeReference = (ValueReference<Translation, BasicConfigurationNode>) (configurationReference = configLoader.loadToReference()).referenceTo(reference);
 		if(localeNode != null && !localeNode.empty()) localeReference.node().from(localeNode);
 		localeNode = localeReference.node();
 		if(addIfNotExist(asReference(reference), new Object[] {})) configLoader.save(localeNode);
 	}
 
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
 		setLocaleReference(reference.getClass());
 		localeReference.setAndSave(reference);
 		localeNode = localeReference.node();
@@ -90,7 +90,7 @@ public class JsonLocale extends AbstractLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends LocaleReference> T asReference(Class<T> clazz) {
+	public <T extends Translation> T asReference(Class<T> clazz) {
 		if(localeReference == null)
 			try {
 				setLocaleReference(localeService.getDefaultReference(pluginID));

@@ -18,7 +18,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import net.kyori.adventure.text.Component;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.LocaleReference;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.TextUtils;
@@ -236,17 +236,17 @@ public class LegacyLocale extends AbstractLocale {
 	}
 
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(Class<T> reference)throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(Class<T> reference)throws SerializationException, ConfigurateException {
 		logger.error("The `Properties` configuration doesn't support the Reference configuration.");
 	}
 
 	@Override
-	public <T extends LocaleReference> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
+	public <T extends Translation> void setLocaleReference(T reference) throws SerializationException, ConfigurateException {
 		setLocaleReference(reference.getClass());
 	}
 
 	@Override
-	public <T extends LocaleReference> T asReference(Class<T> clazz) {
+	public <T extends Translation> T asReference(Class<T> clazz) {
 		if(thisIsDefault) logger.error("The `Properties` configuration doesn't support the Reference configuration.");
 		return getDefaultLocale().asReference(clazz);
 	}

@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.spongepowered.plugin.PluginContainer;
 
+import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
+
 public interface LocaleService {
 
 	/*
@@ -111,17 +113,17 @@ public interface LocaleService {
 	 * <b>2</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
 	 * <b>3</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */
-	void setItemStackSerializerVariant(PluginContainer container, int variant) throws Exception ;
+	void setItemStackSerializerVariant(PluginContainer container, ItemStackSerializerType serializerType) throws Exception ;
 
 	/**
 	 * Getting the type number of the serialization type of an items.
 	 */
-	int getItemStackSerializerVariant(PluginContainer container);
+	ItemStackSerializerType getItemStackSerializer(PluginContainer container);
 
 	/**
 	 * Getting the type number of the serialization type of an items.
 	 */
-	int getItemStackSerializerVariant(String pluginID);
+	ItemStackSerializerType getItemStackSerializer(String pluginID);
 
 	/**
 	 * 
@@ -130,10 +132,10 @@ public interface LocaleService {
 	 * This class will be applied automatically to all localizations loaded after its addition.<br>
 	 * Automatic application of this class does not make any changes to the localization data.
 	 * 
-	 * @param defaultReference - The serializable class extends {@link LocaleReference}
+	 * @param defaultReference - The serializable class extends {@link Translation}
 	 * @param container - {@link PluginContainer}
 	 */
-	<T extends LocaleReference> void setDefaultReference(PluginContainer container, Class<T> defaultReference);
+	<T extends Translation> void setDefaultReference(PluginContainer container, Class<T> defaultReference);
 
 	/**
 	 * Get the default serialization class for plugin localizations.<br>
@@ -142,11 +144,11 @@ public interface LocaleService {
 	 * @param container - {@link PluginContainer}
 	 * @return Serializable class, or null if no class assignment was previously made.
 	 */
-	Class<? extends LocaleReference> getDefaultReference(PluginContainer container);
+	Class<? extends Translation> getDefaultReference(PluginContainer container);
 
 	/**
 	 * Same as {@linkplain #getDefaultReference(PluginContainer)}
 	 */
-	Class<? extends LocaleReference> getDefaultReference(String pluginID);
+	Class<? extends Translation> getDefaultReference(String pluginID);
 
 }

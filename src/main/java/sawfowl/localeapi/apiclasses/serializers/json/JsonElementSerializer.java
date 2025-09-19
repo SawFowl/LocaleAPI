@@ -17,6 +17,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
 
 public class JsonElementSerializer implements TypeSerializer<JsonElement> {
@@ -72,7 +73,7 @@ public class JsonElementSerializer implements TypeSerializer<JsonElement> {
 	}
 
 	private static ConfigurationNode createGsonNode() {
-		return GsonConfigurationLoader.builder().defaultOptions(SerializeOptions.selectOptions(2)).build().createNode();
+		return GsonConfigurationLoader.builder().defaultOptions(SerializeOptions.selectOptions(ItemStackSerializerType.JSON)).build().createNode();
 	}
 
 }

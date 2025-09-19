@@ -318,7 +318,7 @@ public class SerializedItemStack implements PluginComponent {
 			if(object.toJsonObject() != null) {
 				json = object.toJsonObject();
 			} else try {
-				json = BasicConfigurationNode.root(SerializeOptions.OPTIONS_VARIANT_2).set(object.getClass(), object).get(JsonObject.class);
+				json = BasicConfigurationNode.root(SerializeOptions.JSON_OPTIONS_VARIANT).set(object.getClass(), object).get(JsonObject.class);
 			} catch (SerializationException e) {
 				e.printStackTrace();
 			}
@@ -365,7 +365,7 @@ public class SerializedItemStack implements PluginComponent {
 				Object object = getItemStack().toContainer().get(createPath(container, key)).get();
 				if(!object.getClass().isAssignableFrom(def.getClass())) {
 					try {
-						return (T) BasicConfigurationNode.root(SerializeOptions.OPTIONS_VARIANT_2).set(object).get(def.getClass());
+						return (T) BasicConfigurationNode.root(SerializeOptions.JSON_OPTIONS_VARIANT).set(object).get(def.getClass());
 					} catch (SerializationException e) {
 					}
 				} else return (T) object;
@@ -416,7 +416,7 @@ public class SerializedItemStack implements PluginComponent {
 		@Override
 		public <T extends PluginComponent> Optional<T> getPluginComponent(Class<T> clazz, PluginContainer container, String key) {
 			try {
-				return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.OPTIONS_VARIANT_2).set(JsonParser.parseString(components)).node(CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container), key).get(clazz));
+				return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.JSON_OPTIONS_VARIANT).set(JsonParser.parseString(components)).node(CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container), key).get(clazz));
 			} catch (SerializationException | JsonSyntaxException e) {
 				return Optional.empty();
 			}
@@ -455,8 +455,8 @@ public class SerializedItemStack implements PluginComponent {
 			} catch (Exception e) {
 				try {
 					if(clazz.isAssignableFrom(Number.class) && original.getClass().isAssignableFrom(CharSequence.class) && NumberUtils.isParsable(original.toString())) {
-						return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.OPTIONS_VARIANT_2).set(NumberUtils.createNumber(original.toString())).get(clazz));
-					} else return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.OPTIONS_VARIANT_2).set(original).get(clazz));
+						return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.JSON_OPTIONS_VARIANT).set(NumberUtils.createNumber(original.toString())).get(clazz));
+					} else return Optional.ofNullable(BasicConfigurationNode.root(SerializeOptions.JSON_OPTIONS_VARIANT).set(original).get(clazz));
 				} catch (SerializationException e1) {
 					return Optional.empty();
 				}

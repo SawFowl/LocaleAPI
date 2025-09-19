@@ -17,7 +17,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import net.kyori.adventure.text.Component;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.LocaleReference;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.PluginLocale;
@@ -167,7 +167,7 @@ public abstract class AbstractLocale implements PluginLocale {
 
 	protected void setDefaultReference() {
 		if(getType() == ConfigTypes.PROPERTIES) return;
-		Class<? extends LocaleReference> defaultReference = localeService.getDefaultReference(pluginID);
+		Class<? extends Translation> defaultReference = localeService.getDefaultReference(pluginID);
 		if(defaultReference == null || asReference(defaultReference) != null) return;
 		try {
 			setLocaleReference(defaultReference);

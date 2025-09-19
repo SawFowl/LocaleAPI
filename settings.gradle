@@ -64,7 +64,7 @@ plugins {
 }
 
 rootProject.name = 'LocaleAPI'
-
+/*
 include(
 		'bukkit',
 		'bungee',
@@ -96,3 +96,4 @@ include(
 		'sponge11',
 		'velocity'
 )
+*/

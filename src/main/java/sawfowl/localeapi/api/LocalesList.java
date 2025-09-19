@@ -21,7 +21,14 @@ public interface LocalesList {
 
 	<T extends PluginLocale> T remove(Locale locale) throws ClassCastException ;
 
+	boolean contains(Locale locale);
+
 	int size();
+
+	/**
+	 * Save plugin locales from assets.
+	 */
+	void saveAssetLocales();
 
 	@SuppressWarnings("unchecked")
 	default <T extends Translation> T getAsReference(Locale locale) {

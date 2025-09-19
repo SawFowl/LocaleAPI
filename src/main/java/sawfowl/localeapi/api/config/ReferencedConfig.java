@@ -13,21 +13,53 @@ import sawfowl.localeapi.apiclasses.config.ReferencedConfigImpl;
 
 public interface ReferencedConfig<T> extends Config {
 
+	/**
+	 * Creating a configuration for your plugin.
+	 * 
+	 * @param plugin - The PluginContainer of your plugin.
+	 * @param configDir - The configuration directory of your plugin.
+	 * @param name - The name of your configuration file. You don't need to specify the type here.
+	 * @param configType - The type of your configuration file.
+	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
+	 * @param clazz - The serializable class of your configuration.
+	 */
 	@SuppressWarnings("unchecked")
 	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz) {
 		return (ReferencedConfig<T>) ReferencedConfigImpl.create(plugin, configDir, name, configType, itemStackSerializerType);
 	}
 
+	/**
+	 * Creating a configuration for your plugin.
+	 * 
+	 * @param plugin - The PluginContainer of your plugin.
+	 * @param configDir - The configuration directory of your plugin.
+	 * @param name - The name of your configuration file. You don't need to specify the type here.
+	 * @param configType - The type of your configuration file.
+	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
+	 * @param object - An object of the serializable class of your configuration.
+	 */
 	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object) {
 		return (ReferencedConfig<T>) ReferencedConfigImpl.create(plugin, configDir, name, configType, itemStackSerializerType, object);
 	}
 
+	/**
+	 * Getting the configuration loader.
+	 */
 	<N extends ConfigurationNode> ConfigurationReference<N> getReference();
 
+	/**
+	 * See {@link ValueReference}
+	 */
 	<N extends ConfigurationNode> ValueReference<T, N> getValueReference();
 
+	/**
+	 * Saving an object of the serializable class to the current configuration.
+	 */
 	<E extends T> void save(E object);
 
+	/**
+	 * Retrieving an object of the serializable class from the current configuration.
+	 */
 	default T get() {
 		return getValueReference().get();
 	}

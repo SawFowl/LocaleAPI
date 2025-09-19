@@ -99,9 +99,9 @@ public class SerializeOptions {
 
 	/**
 	 * Selecting serialization variant for items.<br>
-	 * <b>1</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
-	 * <b>2</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
-	 * <b>3</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
+	 * <b>SIMPLE</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
+	 * <b>JSON</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
+	 * <b>SPONGE</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */
 	public static ConfigurationOptions selectOptions(ItemStackSerializerType serializerType) {
 		switch(serializerType) {
@@ -113,9 +113,9 @@ public class SerializeOptions {
 
 	/**
 	 * Selecting serialization variant for items.<br>
-	 * <b>1</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
-	 * <b>2</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
-	 * <b>3</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
+	 * <b>SIMPLE</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
+	 * <b>JSON</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
+	 * <b>SPONGE</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */
 	public static TypeSerializerCollection selectSerializersCollection(ItemStackSerializerType serializerType) {
 		switch(serializerType) {

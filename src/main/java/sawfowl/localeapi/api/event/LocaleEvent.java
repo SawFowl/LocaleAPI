@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.spongepowered.api.event.Event;
 
-import sawfowl.localeapi.api.PluginLocale;
+import sawfowl.localeapi.api.config.locale.PluginLocale;
 
 public interface LocaleEvent extends Event {
 

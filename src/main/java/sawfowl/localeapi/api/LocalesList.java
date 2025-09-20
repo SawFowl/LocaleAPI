@@ -7,15 +7,14 @@ import org.spongepowered.api.util.locale.Locales;
 
 import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.config.locale.ReferencedLocale;
-import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public interface LocalesList {
 
-	PluginLocale createSimpleTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale);
+	PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale);
 
-	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, Class<T> clazz);
+	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<T> clazz);
 
-	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, T object);
+	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, T object);
 
 	<T extends PluginLocale> T getLocale(Locale locale) throws ClassCastException;
 

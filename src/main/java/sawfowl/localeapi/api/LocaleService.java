@@ -2,7 +2,6 @@ package sawfowl.localeapi.api;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.spongepowered.plugin.PluginContainer;
 
@@ -74,5 +73,11 @@ public interface LocaleService {
 	LocalesList createLocales(PluginContainer container);
 
 	LocalesList getLocales(PluginContainer container);
+
+	LocalesList getLocales(String plugin);
+
+	boolean localesExist(PluginContainer container);
+
+	boolean localesExist(String plugin);
 
 }

@@ -44,19 +44,16 @@ public class ImplementAPI {
 
 	class API implements LocaleService {
 
-		private Map<String, LocalesList> pluginLocales;
+		private Map<String, LocalesList> pluginLocales = new HashMap<String, LocalesList>();;
 		private Map<String, ItemStackSerializerType> stackSerializers;
 		private Map<String, Class<? extends Translation>> defaultReferences;
 		private List<Locale> locales;
 		private WatchRunner watchThread;
 		private final Path configDirectory;
-		private final Logger logger;
 		private Locale system = Locale.getDefault();
 		private boolean allowSystem = false;
 		API(Logger logger, Path path) {
-			setInstaice();
-			pluginLocales = new HashMap<String, LocalesList>();
-			this.logger = logger;
+			service = this;
 			configDirectory = path;
 			stackSerializers = new HashMap<String, ItemStackSerializerType>();
 			defaultReferences = new HashMap<String, Class<? extends Translation>>();
@@ -67,31 +64,19 @@ public class ImplementAPI {
 			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.publicLookup());
 		}
 
-		private void setInstaice() {
-			service = this;
-		}
-
+		@Override
 		public Locale getSystemOrDefaultLocale() {
 			return allowSystem ? system : getDefaultLocale();
 		}
 
+		@Override
 		public List<Locale> getLocalesList() {
 			return locales;
 		}
 
+		@Override
 		public Locale getDefaultLocale() {
 			return Locales.DEFAULT;
-		}
-
-		@Listener(order = Order.LAST)
-		public void onCompleteLoad(StartedEngineEvent<Server> event) {
-			watchThread.enable();
-		}
-
-		@Listener
-		public void stopWatch(StoppedGameEvent event) {
-			if(event == null) return;
-			watchThread.stopWatch();
 		}
 
 		@Override
@@ -128,20 +113,45 @@ public class ImplementAPI {
 			return defaultReferences.containsKey(pluginID) ? defaultReferences.get(pluginID) : null;
 		}
 
-		void startWatch() {
-			watchThread.run();
-		}
-
 		@Override
 		public LocalesList createLocales(PluginContainer container) {
-			pluginLocales.put(container.metadata().id(), LocalesListImpl.create(container, configDirectory, null));
-			return null;
+			pluginLocales.put(container.metadata().id(), LocalesListImpl.create(container, configDirectory, this));
+			return getLocales(container);
 		}
 
 		@Override
 		public LocalesList getLocales(PluginContainer container) {
-			// TODO Auto-generated method stub
-			return null;
+			return getLocales(container.metadata().id());
+		}
+
+		@Override
+		public LocalesList getLocales(String plugin) {
+			return pluginLocales.get(plugin);
+		}
+
+		@Override
+		public boolean localesExist(PluginContainer container) {
+			return localesExist(container.metadata().id());
+		}
+
+		@Override
+		public boolean localesExist(String plugin) {
+			return pluginLocales.containsKey(plugin);
+		}
+
+		@Listener(order = Order.LAST)
+		public void onCompleteLoad(StartedEngineEvent<Server> event) {
+			watchThread.enable();
+		}
+
+		@Listener
+		public void stopWatch(StoppedGameEvent event) {
+			if(event == null) return;
+			watchThread.stopWatch();
+		}
+
+		void startWatch() {
+			watchThread.run();
 		}
 
 	}

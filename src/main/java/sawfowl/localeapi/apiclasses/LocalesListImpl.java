@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
@@ -17,7 +18,6 @@ import sawfowl.localeapi.api.LocalesList;
 import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.config.locale.ReferencedLocale;
-import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.apiclasses.config.locale.PluginLocaleImpl;
 import sawfowl.localeapi.apiclasses.config.locale.ReferencedLocaleImpl;
 import sawfowl.localeapi.utils.WatchRunner;
@@ -40,23 +40,23 @@ public class LocalesListImpl implements LocalesList {
 	}
 
 	@Override
-	public PluginLocale createSimpleTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale) {
-		locales.put(locale, PluginLocaleImpl.create(container, path, configType, itemStackSerializerType, locale));
+	public PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale) {
+		locales.put(locale, PluginLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), locale, this));
 		return locales.get(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, Class<T> clazz) {
-		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, itemStackSerializerType, clazz, locale));
+	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<T> clazz) {
+		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale));
 		if(reference == null) reference = clazz;
 		return (ReferencedLocale<T>) locales.get(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, T object) {
-		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, itemStackSerializerType, object, locale));
+	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, T object) {
+		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale));
 		if(reference == null) reference = object.getClass();
 		return (ReferencedLocale<T>) locales.get(locale);
 	}
@@ -64,7 +64,7 @@ public class LocalesListImpl implements LocalesList {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends PluginLocale> T getLocale(Locale locale) throws ClassCastException {
-		return (T) locales.get(locale);
+		return (T) (locales.containsKey(locale) ? locales.get(locale) : locales.get(Locales.DEFAULT));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -101,8 +101,8 @@ public class LocalesListImpl implements LocalesList {
 						Files.copy(inputStream, localeFile.toPath());
 						container.logger().info("Locale config " + locale.toLanguageTag() + configTypeName + " for plugin \"" + getPluginID() + "\" has been saved");
 						if(reference == null) {
-							createSimpleTranslation(configType, localeService.getItemStackSerializer(container), locale);
-						} else createReferenceTranslation(configType, localeService.getItemStackSerializer(container), locale, reference);
+							createSimpleTranslation(configType, locale);
+						} else createReferenceTranslation(configType, locale, reference);
 					} catch (IOException e) {
 						container.logger().error(e.getLocalizedMessage());
 					}

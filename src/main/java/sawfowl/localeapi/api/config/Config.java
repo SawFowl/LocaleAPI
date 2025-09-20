@@ -1,10 +1,13 @@
 package sawfowl.localeapi.api.config;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -69,6 +72,21 @@ public interface Config {
 	 * Adding an object to the current configuration if the specified configuration section does not exist.
 	 */
 	<T> boolean addIfNotExist(T object, @Nullable String comment, TypeToken<T> token, Object... path);
+
+	/**
+	 * Adding an object to the current configuration if the specified configuration section does not exist.
+	 */
+	<T> boolean addIfNotExist(T object, @Nullable String comment, Object... path);
+
+	/**
+	 * Adding an objects to the current configuration if the specified configuration section does not exist.
+	 */
+	<T> boolean addIfNotExist(List<T> object, @Nullable String comment, TypeToken<T> token, Object... path);
+
+	/**
+	 * Adding an objects to the current configuration if the specified configuration section does not exist.
+	 */
+	<T> boolean addIfNotExist(Class<T> clazz, List<T> object, @Nullable String comment, Object... path);
 
 	/**
 	 * Adding serializers to the current configuration.<br>
@@ -143,6 +161,32 @@ public interface Config {
 	 */
 	default boolean getBoolean(Object... path) {
 		return getRootNode().node(path).getBoolean();
+	}
+
+
+	/**
+	 * See {@link ConfigurationNode#getList(Class)}
+	 */
+	default <T> List<T> getList(Class<T> clazz, Object... path) {
+		try {
+			return getRootNode().node(path).getList(clazz);
+		} catch (SerializationException e) {
+			e.printStackTrace();
+			return Collections.emptyList();
+		}
+	}
+
+
+	/**
+	 * See {@link ConfigurationNode#get(Class)}
+	 */
+	@Nullable default <T> T getObject(Class<T> clazz, Object... path) {
+		try {
+			return getRootNode().node(path).get(clazz);
+		} catch (SerializationException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

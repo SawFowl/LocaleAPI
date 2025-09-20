@@ -28,7 +28,7 @@ import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.EnumLocales;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.Logger;
-import sawfowl.localeapi.api.PluginLocale;
+import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.event.LocaleEvent;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -117,7 +117,7 @@ class Watcher {
 			onModify(container, locale, type);
 		} if(event.kind() == ENTRY_DELETE && locale != Locales.DEFAULT) Sponge.asyncScheduler().submit(Task.builder().delay(200, TimeUnit.MILLISECONDS).plugin(LocaleAPI.getPluginContainer()).execute(() -> {
 			if(path.resolve(fileName).toFile().exists()) return;
-			localeService.getPluginLocales(container).remove(locale);
+			localeService.getLocales(container).remove(locale);
 			logger.info("[FileWatcher] The \"" + locale.toLanguageTag() + "\" localization for the \"" + container.metadata().id() + "\" has been removed!");
 			Sponge.eventManager().post(new LocaleEvent.Delete() {
 
@@ -146,12 +146,16 @@ class Watcher {
 	}
 
 	private void onCreate(PluginContainer container, Locale locale, ConfigTypes type) {
-		if(!localeService.getPluginLocales(container).containsKey(locale)) create(container, locale, type, System.currentTimeMillis());
+		if(!localeService.getLocales(container).contains(locale)) create(container, locale, type, System.currentTimeMillis());
 	}
 
 	private void create(PluginContainer container, Locale locale, ConfigTypes type, long time) {
 		logger.info("[FileWatcher] Added a new localization file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\"! Loading...");
-		PluginLocale pluginLocale = localeService.createPluginLocale(container, type, locale);
+		PluginLocale pluginLocale = localeService.getDefaultReference(container) == null
+			?
+			localeService.getLocales(container).createSimpleTranslation(type, locale)
+			:
+			localeService.getLocales(container).createReferenceTranslation(type, locale, localeService.getDefaultReference(container));
 		Sponge.eventManager().post(new LocaleEvent.Create() {
 
 			@Override
@@ -186,9 +190,9 @@ class Watcher {
 	private void onModify(PluginContainer container, Locale locale, ConfigTypes type) {
 		UpdateInfo updateInfo = this.updateInfo.stream().filter(info -> info.locale.equals(locale) && info.container.metadata().id().equals(container.metadata().id())).findFirst().orElse(null);
 		if(updateInfo == null) {
-			if(!localeService.getPluginLocales(container).containsKey(locale) || localeService.getPluginLocales(container).get(locale).getType() != type) return;
-			PluginLocale pluginLocale = localeService.getPluginLocales(container).get(locale);
-			pluginLocale.reload();
+			if(!localeService.getLocales(container).contains(locale) || localeService.getLocales(container).getLocale(locale).getType() != type) return;
+			PluginLocale pluginLocale = localeService.getLocales(container).getLocale(locale);
+			pluginLocale.load();
 			this.updateInfo.add(new UpdateInfo(System.currentTimeMillis(), locale, container));
 			logger.info("[FileWatcher] Locale file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\" has been changed! Reloading...");
 			Sponge.eventManager().post(new LocaleEvent.Reload() {

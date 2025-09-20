@@ -1,14 +1,14 @@
 package sawfowl.localeapi.api.config.locale;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 import org.spongepowered.api.event.lifecycle.RegisterBuilderEvent;
-import org.spongepowered.configurate.serialize.SerializationException;
 
 import net.kyori.adventure.text.Component;
+
 import sawfowl.localeapi.api.Text;
+import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.config.Config;
 
 public interface PluginLocale extends Config {
@@ -19,17 +19,24 @@ public interface PluginLocale extends Config {
 	Locale getLocale();
 
 	/**
+	 * Converting the configuration so that it is possible to work with a serializable class.<br>
+	 * When working with localization, it is recommended to use this method to get a configuration with a serializable class.
+	 */
+	<T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(T config);
+
+	/**
+	 * Converting the configuration so that it is possible to work with a serializable class.<br>
+	 * When working with localization, it is recommended to use this method to get a configuration with a serializable class.
+	 */
+	<T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(Class<T> config);
+
+	/**
 	 * Getting a deserialized list of {@link Component} classes from the locale configuration node. 
 	 * 
 	 * @param path- Path in the config file.
 	 */
 	default List<Component> getComponents(Object... path) {
-		try {
-			return getRootNode().node(path).getList(Component.class);
-		} catch (SerializationException e) {
-			e.printStackTrace();
-			return Collections.emptyList();
-		}
+		return getList(Component.class, path);
 	}
 
 	/**
@@ -38,12 +45,7 @@ public interface PluginLocale extends Config {
 	 * @param path - Path in the config file.
 	 */
 	default Component getComponent(Object... path) {
-		try {
-			return getRootNode().node(path).get(Component.class);
-		} catch (SerializationException e) {
-			e.printStackTrace();
-			return Component.empty();
-		}
+		return getObject(Component.class, path);
 	}
 
 	/**

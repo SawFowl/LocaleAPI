@@ -11,6 +11,7 @@ public class Main {
     private Logger logger;
     private static LocaleService localeService;
     private PluginContainer pluginContainer;
+	private LocalesList locales;
     public LocaleService getLocaleService() {
         return localeService;
     }
@@ -26,6 +27,7 @@ public class Main {
         instance = this;
         logger = LogManager.getLogger("PluginName");
         localeService = event.getLocaleService();
+		locales = localeService.createLocales(pluginContainer);
         testLocales();
     }
 
@@ -34,23 +36,19 @@ public class Main {
     @Listener
     public void onLocaleServisePostEvent(LocaleServiseEvent.Started event) {
         localeService = event.getLocaleService();
+		locales = localeService.createLocales(pluginContainer);
         testLocales();
     }
 
     public void testLocales() {
         if(!localeService.localesExist(pluginContainer)) {
-            localeService.createPluginLocale(pluginContainer, ConfigTypes.HOCON, Locales.DEFAULT);
-            //                                  ^^ pluginContainer or "pluginid".
-            localeService.createPluginLocale(pluginContainer, ConfigTypes.HOCON, Locales.DEFAULT);
-            getLocaleUtil(Locales.DEFAULT).checkString("Your string for localization.", "Optional comment", "Path");
+            locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
+            locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
+            locales.getLocale(Locales.DEFAULT).addIfNotExist("Your string for localization.", "Optional comment", "Path");
         }
         // Get message from locale. You can get and use the player's localization 'player.locale();'.
         // The boolean parameter defines what type of string serializer will be used.
-        logger.info(getLocaleUtil(Locales.DEFAULT).getComponent("Path"));
-    }
-
-    public PluginLocale getPluginLocale(Locale locale) {
-        return localeService.getOrDefaultLocale(pluginContainer, locale);
+        logger.info(locales.getLocale(Locales.DEFAULT).getComponent("Path"));
     }
 }
 ```
@@ -67,6 +65,6 @@ repositories {
 }
 dependencies {
     ...
-    implementation 'com.github.SawFowl:LocaleAPI:3.2'
+    implementation 'com.github.SawFowl:LocaleAPI:6.0'
 }
 ```

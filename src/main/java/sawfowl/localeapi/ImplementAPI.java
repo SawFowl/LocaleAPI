@@ -116,6 +116,7 @@ public class ImplementAPI {
 		@Override
 		public LocalesList createLocales(PluginContainer container) {
 			pluginLocales.put(container.metadata().id(), LocalesListImpl.create(container, configDirectory, this));
+			WatchRunner.initPlugin(container);
 			return getLocales(container);
 		}
 

@@ -38,16 +38,15 @@ public class ReferencedLocaleImpl<T extends Translation> extends ReferencedConfi
 		return locale;
 	}
 
-	@SuppressWarnings({ "unchecked", "hiding" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(T config) {
+	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(L config) {
 		return (O) this;
 	}
 
-	@SuppressWarnings({ "unchecked", "hiding" })
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(Class<T> config) {
-		// TODO Auto-generated method stub
+	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(Class<L> config) {
 		return (O) this;
 	}
 

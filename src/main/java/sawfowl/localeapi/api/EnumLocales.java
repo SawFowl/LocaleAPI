@@ -1771,4 +1771,8 @@ public enum EnumLocales {
 		return Stream.of(EnumLocales.values()).filter(value -> value.getTag().equals(locale)).findFirst().map(l -> l.get()).orElse(getDefault());
 	}
 
+	public static boolean isValisTag(String tag) {
+		return Stream.of(EnumLocales.values()).filter(value -> value.getTag().equals(tag)).findFirst().isPresent();
+	}
+
 }

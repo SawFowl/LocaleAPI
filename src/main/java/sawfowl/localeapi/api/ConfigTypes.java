@@ -34,7 +34,7 @@ public enum ConfigTypes {
 			return "yml";
 		}
 	},
-	PROPERTIES(".properties") {
+	/**PROPERTIES(".properties") {
 		@Override
 		public String toString() {
 			return ".properties";
@@ -43,7 +43,7 @@ public enum ConfigTypes {
 		public String getExtension() {
 			return "properties";
 		}
-	},
+	}*/
 	UNKNOWN(""){};
 
 	ConfigTypes(String string) {}
@@ -57,7 +57,7 @@ public enum ConfigTypes {
 	}
 
 	public static boolean isValidExtension(String extension) {
-		return Stream.of(ConfigTypes.values()).filter(v -> v.getExtension().equals(extension)).findFirst().isPresent();
+		return !extension.isEmpty() && Stream.of(ConfigTypes.values()).filter(v -> v.getExtension().equals(extension)).findFirst().isPresent();
 	}
 
 	public static ConfigTypes getTypeByExtension(String extension) {

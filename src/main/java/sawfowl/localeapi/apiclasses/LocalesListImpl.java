@@ -33,10 +33,20 @@ public class LocalesListImpl implements LocalesList {
 	private PluginContainer container;
 	private Class<? extends Translation> reference;
 	private LocaleService localeService;
+	private static final String DOT = ".";
 	private LocalesListImpl(PluginContainer container, Path localesDir, LocaleService localeService) {
 		this.container = container;
 		path = localesDir.resolve(container.metadata().id());
 		this.localeService = localeService;
+		for(File file : path.toFile().listFiles()) {
+			if(!file.getName().startsWith(DOT) || !file.getName().contains(DOT) || file.getName().endsWith(DOT)) continue;
+			String[] nameAndExtension = file.getName().split(DOT);
+			if(EnumLocales.isValisTag(nameAndExtension[0]) && ConfigTypes.isValidExtension(nameAndExtension[1])) {
+				if(localeService.getDefaultReference(container) == null) {
+					createSimpleTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]));
+				} else createReferenceTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]), localeService.getDefaultReference(container));
+			}
+		}
 	}
 
 	@Override

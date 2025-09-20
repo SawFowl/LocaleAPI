@@ -35,7 +35,7 @@ public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(T config) {
+	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(L config) {
 		Objects.requireNonNull(config);
 		localesList.remove(locale);
 		return (O) localesList.createReferenceTranslation(getType(), locale, config);
@@ -43,7 +43,7 @@ public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(Class<T> config) {
+	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(Class<L> config) {
 		localesList.remove(locale);
 		return (O) localesList.createReferenceTranslation(getType(), locale, config);
 	}

@@ -22,13 +22,13 @@ public interface PluginLocale extends Config {
 	 * Converting the configuration so that it is possible to work with a serializable class.<br>
 	 * When working with localization, it is recommended to use this method to get a configuration with a serializable class.
 	 */
-	<T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(T config);
+	<L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(L config);
 
 	/**
 	 * Converting the configuration so that it is possible to work with a serializable class.<br>
 	 * When working with localization, it is recommended to use this method to get a configuration with a serializable class.
 	 */
-	<T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(Class<T> config);
+	<L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(Class<L> config);
 
 	/**
 	 * Getting a deserialized list of {@link Component} classes from the locale configuration node. 

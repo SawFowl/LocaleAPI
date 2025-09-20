@@ -10,6 +10,7 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
+import sawfowl.localeapi.api.config.Config;
 import sawfowl.localeapi.api.config.ReferencedConfig;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
@@ -65,9 +66,9 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 		return getValueReference().node();
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public void load() {
+	public <C extends Config> C load() {
 		try {
 			configurationReference = (ConfigurationReference<N>) getLoader().loadToReference();
 			configurationReference.load();
@@ -75,11 +76,14 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
 		}
+		return (C) this;
 	}
 
+	@SuppressWarnings({ "unchecked" })
 	@Override
-	public void save() {
+	public <C extends Config> C save() {
 		valueReference.setAndSave(get());
+		return (C) this;
 	}
 
 	@Override

@@ -107,12 +107,12 @@ public interface Config {
 	/**
 	 * This method can be used to reload the configuration file.
 	 */
-	void load();
+	<C extends Config> C load();
 
 	/**
 	 * Saving the configuration.
 	 */
-	void save();
+	<C extends Config> C save();
 
 	/**
 	 * Checking for the existence of a section in the configuration.

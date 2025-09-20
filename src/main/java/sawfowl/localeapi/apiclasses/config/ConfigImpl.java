@@ -178,23 +178,27 @@ public class ConfigImpl implements Config {
 		return referenced != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void load() {
+	public <C extends Config> C load() {
 		try {
 			if(loader == null) loader = selectBuilder(type).path(path).build();
 			node = loader.load();
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
 		}
+		return (C) this;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void save() {
+	public <C extends Config> C save() {
 		try {
 			loader.save(node);
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
 		}
+		return (C) this;
 	}
 
 	@SuppressWarnings("unchecked")

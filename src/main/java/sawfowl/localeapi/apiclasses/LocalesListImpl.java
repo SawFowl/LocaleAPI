@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.plugin.PluginContainer;
@@ -28,7 +30,7 @@ public class LocalesListImpl implements LocalesList {
 		return new LocalesListImpl(container, localesDir, localeService);
 	}
 
-	private Map<Locale, PluginLocale> locales = new HashMap<Locale, PluginLocale>();
+	private Map<Locale, PluginLocale> locales = new HashMap<>();
 	private Path path;
 	private PluginContainer container;
 	private Class<? extends Translation> reference;
@@ -38,7 +40,7 @@ public class LocalesListImpl implements LocalesList {
 		this.container = container;
 		path = localesDir.resolve(container.metadata().id());
 		this.localeService = localeService;
-		for(File file : path.toFile().listFiles()) {
+		if(path.toFile().exists() && path.toFile().isDirectory()) for(File file : path.toFile().listFiles()) {
 			if(!file.getName().startsWith(DOT) || !file.getName().contains(DOT) || file.getName().endsWith(DOT)) continue;
 			String[] nameAndExtension = file.getName().split(DOT);
 			if(EnumLocales.isValisTag(nameAndExtension[0]) && ConfigTypes.isValidExtension(nameAndExtension[1])) {
@@ -83,6 +85,17 @@ public class LocalesListImpl implements LocalesList {
 		return (T) locales.remove(locale);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends PluginLocale> Stream<T> stream() {
+		return (Stream<T>) locales.values().stream();
+	}
+
+	@Override
+	public void forEach(Consumer<? super PluginLocale> action) {
+		locales.values().forEach(action);
+	}
+
 	@Override
 	public boolean contains(Locale locale) {
 		return locales.containsKey(locale);
@@ -92,9 +105,18 @@ public class LocalesListImpl implements LocalesList {
 	public int size() {
 		return locales.size();
 	}
+	@Override
+	public boolean isEmpy() {
+		return locales.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		return "LocalesList[plugin=" + container.metadata().id() + ", path=" + path.toFile().getAbsolutePath() + ", locales=" + locales.keySet().stream().map(Locale::toLanguageTag).toList() + "]";
+	}
 
 	public void saveAssetLocales() {
-		File localePath = new File(this.path + File.separator + getPluginID());
+		File localePath = this.path.toFile();
 		if(!localePath.exists()) localePath.mkdir();
 		for(Locale locale : EnumLocales.getLocales()) saveAssets(locale);
 		updateWatch();
@@ -105,7 +127,7 @@ public class LocalesListImpl implements LocalesList {
 		for(ConfigTypes configType : ConfigTypes.values()) {
 			String configTypeName = configType.toString();
 			container.openResource(File.separator + "assets" + File.separator + getPluginID() + File.separator + "lang" + File.separator + locale.toLanguageTag() + configTypeName).ifPresent(inputStream -> {
-				File localeFile = path.resolve(getPluginID() + File.separator + locale.toLanguageTag() + configTypeName).toFile();
+				File localeFile = path.resolve(locale.toLanguageTag() + configTypeName).toFile();
 				if(!localeFile.exists() && !contains(locale)) {
 					try {
 						Files.copy(inputStream, localeFile.toPath());

@@ -61,7 +61,7 @@ public class ImplementAPI {
 			WatchRunner.createInstance(this, logger, path);
 			watchThread = WatchRunner.getInstance();
 			allowSystem = locales.contains(system) || locales.stream().filter(locale -> (locale.toLanguageTag().equals(system.toLanguageTag()))).findFirst().isPresent();
-			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.publicLookup());
+			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.lookup());
 		}
 
 		@Override

@@ -1,6 +1,8 @@
 package sawfowl.localeapi.api;
 
 import java.util.Locale;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.spongepowered.api.util.locale.LocaleSource;
 import org.spongepowered.api.util.locale.Locales;
@@ -20,9 +22,15 @@ public interface LocalesList {
 
 	<T extends PluginLocale> T remove(Locale locale) throws ClassCastException ;
 
+	<T extends PluginLocale> Stream<T> stream();
+
+	void forEach(Consumer<? super PluginLocale> action);
+
 	boolean contains(Locale locale);
 
 	int size();
+
+	boolean isEmpy();
 
 	/**
 	 * Save plugin locales from assets.

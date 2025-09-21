@@ -1,6 +1,8 @@
 package sawfowl.localeapi.apiclasses.config;
 
 import java.nio.file.Path;
+import java.util.Objects;
+
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
@@ -29,6 +31,7 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	private Class<T> clazz;
 	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz) {
 		super(plugin, configDir, name, configType, itemStackSerializerType);
+		Objects.requireNonNull(clazz);
 		this.clazz = clazz;
 		load();
 		if(!getPath().toFile().exists()) save();
@@ -37,9 +40,10 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	@SuppressWarnings("unchecked")
 	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object) {
 		super(plugin, configDir, name, configType, itemStackSerializerType);
+		Objects.requireNonNull(object);
 		this.clazz = (Class<T>) object.getClass();
 		load();
-		if(!getPath().toFile().exists()) save();
+		if(!getPath().toFile().exists()) save(object);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -70,7 +74,7 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	@Override
 	public <C extends Config> C load() {
 		try {
-			configurationReference = (ConfigurationReference<N>) getLoader().loadToReference();
+			configurationReference = (ConfigurationReference<N>) super.selectBuilder(getType()).build().loadToReference();
 			configurationReference.load();
 			valueReference = configurationReference.referenceTo(clazz);
 		} catch (ConfigurateException e) {

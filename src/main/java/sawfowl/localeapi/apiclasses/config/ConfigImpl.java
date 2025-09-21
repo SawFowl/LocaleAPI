@@ -8,14 +8,10 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.gson.GsonConfigurationLoader;
-import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
-import org.spongepowered.configurate.yaml.NodeStyle;
-import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 import org.spongepowered.plugin.PluginContainer;
 
 import io.leangen.geantyref.TypeToken;
@@ -46,7 +42,12 @@ public class ConfigImpl implements Config {
 		this.type = configType;
 		this.name = name;
 		this.itemStackSerializerType = itemStackSerializerType;
-		load();
+		loader = selectBuilder(type).path(path).build();
+		try {
+			node = loader.load();
+		} catch (ConfigurateException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -204,11 +205,11 @@ public class ConfigImpl implements Config {
 	@SuppressWarnings("unchecked")
 	<B extends AbstractConfigurationLoader.Builder<B, ?>> B selectBuilder(ConfigTypes loaderType) {
 		switch (loaderType) {
-			case YAML: return (B) YamlConfigurationLoader.builder().defaultOptions(SerializeOptions.selectOptions(getItemStackSerializerType())).nodeStyle(NodeStyle.BLOCK);
+			case YAML: return (B) SerializeOptions.createYamlConfigurationLoader(itemStackSerializerType).path(path);
 			//case XML: return (B) XmlConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).writesExplicitType(true);
-			case JSON: return (B) GsonConfigurationLoader.builder().defaultOptions(SerializeOptions.selectOptions(getItemStackSerializerType()));
+			case JSON: return (B) SerializeOptions.createJsonConfigurationLoader(itemStackSerializerType).path(path);
 			//case JACKSON: return (B) JacksonConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).fieldValueSeparatorStyle(FieldValueSeparatorStyle.SPACE_BOTH_SIDES);
-			default: return (B) HoconConfigurationLoader.builder().defaultOptions(SerializeOptions.selectOptions(getItemStackSerializerType()));
+			default: return (B) SerializeOptions.createHoconConfigurationLoader(itemStackSerializerType).path(path);
 		}
 	}
 

@@ -84,7 +84,7 @@ public class SerializeOptions {
 	 * @param <C> nodeClass - Configuration node processing class. Note that `{@link CommentedConfigurationNode}` is not suitable for configurations in Json format.
 	 * @param path - Path to the configuration file.
 	 * @param configType - Configuration Type. To avoid errors, it must point to the same class loader as the `Class<T> loaderClass` parameter.
-	 * @param itemStackSerializerVariant - The type of item serialization used. See {@linkplain #selectSerializersCollection(int)}
+	 * @param serializerType - The type of item serialization used. See {@linkplain #selectSerializersCollection(ItemStackSerializerType)}
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")

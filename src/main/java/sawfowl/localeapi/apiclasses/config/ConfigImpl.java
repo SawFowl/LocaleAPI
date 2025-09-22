@@ -42,12 +42,7 @@ public class ConfigImpl implements Config {
 		this.type = configType;
 		this.name = name;
 		this.itemStackSerializerType = itemStackSerializerType;
-		loader = selectBuilder(type).path(path).build();
-		try {
-			node = loader.load();
-		} catch (ConfigurateException e) {
-			e.printStackTrace();
-		}
+		if(!(this instanceof ReferencedConfigImpl)) load();
 	}
 
 	@Override

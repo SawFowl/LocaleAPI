@@ -8,6 +8,7 @@ import org.spongepowered.api.adventure.SpongeComponents;
 import org.spongepowered.api.command.CommandCause;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -61,6 +62,14 @@ public class TextUtils {
 		return string == null ? Component.empty() : GsonComponentSerializer.gson().deserialize(string);
 	}
 
+	public static final Component deserializeMiniMessage(String string) {
+		try {
+			return MiniMessage.miniMessage().deserialize(string);
+		} catch (Exception e) {
+			return deserializeLegacy(string);
+		}
+	}
+
 	/**
 	 * Removing all decorations from the text.
 	 */
@@ -96,6 +105,7 @@ public class TextUtils {
 	 */
 	public static final Component deserialize(String string) {
 		if(string == null) return Component.empty();
+		if(string.startsWith("<") && string.endsWith(">")) return deserializeMiniMessage(string);
 		if(isLegacyDecor(string)) {
 			return deserializeLegacy(string);
 		} else try {

@@ -5,26 +5,42 @@ import java.util.Locale;
 
 import org.spongepowered.plugin.PluginContainer;
 
+import com.google.inject.Inject;
+
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
-public interface LocaleService {
+/**
+ * The main API for working with localizations. Using this interface, you can register your collection of localizations for your plugin.
+ */
+public abstract class LocaleService {
+
+	@Inject
+	private static LocaleService INSTANCE;
+
+	/**
+	 * Getting the API.<br>
+	 * You can use this method in your plugin's constructor if your plugin is loaded after LocaleAPI.
+	 */
+	public static LocaleService getInstance() {
+		return INSTANCE;
+	}
 
 	/*
 	 * Getting the system locale.<br>
 	 * If Sponge does not support your system locale, the default locale for Sponge will be selected.
 	 */
-	Locale getSystemOrDefaultLocale();
+	public abstract Locale getSystemOrDefaultLocale();
 
 	/**
 	 * List of all localizations of the game.
 	 * 
 	 */
-	List<Locale> getLocalesList();
+	public abstract List<Locale> getLocalesList();
 
 	/**
 	 * The default locale. Used in a localization map.
 	 */
-	Locale getDefaultLocale();
+	public abstract Locale getDefaultLocale();
 
 	/**
 	 * Selecting serialization variant for items.<br>
@@ -32,17 +48,17 @@ public interface LocaleService {
 	 * <b>2</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
 	 * <b>3</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */
-	void setItemStackSerializerVariant(PluginContainer container, ItemStackSerializerType serializerType) throws Exception ;
+	public abstract void setItemStackSerializerVariant(PluginContainer container, ItemStackSerializerType serializerType) throws Exception ;
 
 	/**
 	 * Getting the type number of the serialization type of an items.
 	 */
-	ItemStackSerializerType getItemStackSerializer(PluginContainer container);
+	public abstract ItemStackSerializerType getItemStackSerializer(PluginContainer container);
 
 	/**
 	 * Getting the type number of the serialization type of an items.
 	 */
-	ItemStackSerializerType getItemStackSerializer(String pluginID);
+	public abstract ItemStackSerializerType getItemStackSerializer(String pluginID);
 
 	/**
 	 * 
@@ -54,7 +70,7 @@ public interface LocaleService {
 	 * @param defaultReference - The serializable class extends {@link Translation}
 	 * @param container - {@link PluginContainer}
 	 */
-	<T extends Translation> void setDefaultReference(PluginContainer container, Class<T> defaultReference);
+	public abstract <T extends Translation> void setDefaultReference(PluginContainer container, Class<T> defaultReference);
 
 	/**
 	 * Get the default serialization class for plugin localizations.<br>
@@ -63,21 +79,23 @@ public interface LocaleService {
 	 * @param container - {@link PluginContainer}
 	 * @return Serializable class, or null if no class assignment was previously made.
 	 */
-	Class<? extends Translation> getDefaultReference(PluginContainer container);
+	public abstract <T extends Translation> Class<T> getDefaultReference(PluginContainer container);
 
 	/**
 	 * Same as {@linkplain #getDefaultReference(PluginContainer)}
 	 */
-	Class<? extends Translation> getDefaultReference(String pluginID);
+	public abstract <T extends Translation> Class<T> getDefaultReference(String pluginID);
 
-	LocalesList createLocales(PluginContainer container);
+	public abstract <T extends Translation> LocalesList<T> createLocales(PluginContainer container);
 
-	LocalesList getLocales(PluginContainer container);
+	public abstract <T extends Translation> LocalesList<T> createLocales(PluginContainer container, Class<? extends T> translationReference);
 
-	LocalesList getLocales(String plugin);
+	public abstract <T extends Translation> LocalesList<T> getLocales(PluginContainer container);
 
-	boolean localesExist(PluginContainer container);
+	public abstract <T extends Translation> LocalesList<T> getLocales(String plugin);
 
-	boolean localesExist(String plugin);
+	public abstract boolean localesExist(PluginContainer container);
+
+	public abstract boolean localesExist(String plugin);
 
 }

@@ -1,69 +1,147 @@
 package sawfowl.localeapi.api;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 import org.spongepowered.api.util.locale.LocaleSource;
 import org.spongepowered.api.util.locale.Locales;
+import org.spongepowered.configurate.ConfigurationNode;
 
 import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.config.locale.ReferencedLocale;
 
-public interface LocalesList {
+/**
+ * A collection of localizations for your plugin.<br>
+ * You can use both simple localization configurations and reference localizations.<br>
+ * When using reference localizations, make sure that they all have the same type or implement one interface that they share.<br>
+ * When using reference localizations, you can also cast this list to the list of localizations in the method in your plugin, indicating your type.
+ * @param <T> - Your class or interface that inherits the `Translation` interface. It will be `null` if you did not specify the type when creating this list.
+ */
+public interface LocalesList<@Nullable T extends Translation> {
 
+	/**
+	 * Creating a simple localization. You will need to write and read data from the configuration yourself.<br>
+	 * See {@link ConfigurationNode} for more info.
+	 */
 	PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale);
 
-	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<T> clazz);
+	/**
+	 * Creating a reference localization. You will not need to write and read data yourself by accessing the configuration sections.<br>
+	 * You will be provided with the object you specified with all the data from the configuration file corresponding to the specified localization.
+	 */
+	<O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<O> clazz);
 
-	<T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, T object);
+	/**
+	 * Creating a reference localization. You will not need to write and read data yourself by accessing the configuration sections.<br>
+	 * You will be provided with the object you specified with all the data from the configuration file corresponding to the specified localization.
+	 */
+	<O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, O object);
 
-	<T extends PluginLocale> T getLocale(Locale locale) throws ClassCastException;
+	/**
+	 * Use this method to get localization if you do not use reference localizations.
+	 */
+	<L extends PluginLocale> L getSimple(Locale locale) throws ClassCastException;
 
-	<T extends PluginLocale> T remove(Locale locale) throws ClassCastException ;
+	/**
+	 * Removing localization.
+	 */
+	<L extends PluginLocale> L remove(Locale locale) throws ClassCastException ;
 
-	<T extends PluginLocale> Stream<T> stream();
+	/**
+	 * See {@link List#stream()}
+	 */
+	<L extends PluginLocale> Stream<L> stream();
 
+	/**
+	 * See {@link List#forEach(Consumer)}
+	 */
 	void forEach(Consumer<? super PluginLocale> action);
 
+	/**
+	 * The method returns true if the localization already exists. False if there is no specified localization.
+	 */
 	boolean contains(Locale locale);
 
+	/**
+	 * Getting the number of registered localizations.
+	 */
 	int size();
 
+	/**
+	 * The method will return the value true if no localization is registered, otherwise the value false will be returned.
+	 */
 	boolean isEmpy();
 
 	/**
-	 * Save plugin locales from assets.
+	 * Save plugin locales from assets.<br>
+	 * This method is automatically called when creating this list.
 	 */
 	void saveAssetLocales();
 
+	/**
+	 * Use this method if you use reference localizations.
+	 */
 	@SuppressWarnings("unchecked")
-	default <T extends Translation> T getAsReference(Locale locale) {
-		return (T) getLocale(locale).toReference().get();
+	default T getAsReference(Locale locale) {
+		return (T) getSimple(locale).toReference().get();
 	}
 
-	default <T extends PluginLocale> T getLocale(LocaleSource localeSource) {
-		return getLocale(localeSource.locale());
+	/**
+	 * Use this method to get localization if you do not use reference localizations.
+	 */
+	default <L extends PluginLocale> L getSimple(LocaleSource localeSource) {
+		return getSimple(localeSource.locale());
 	}
 
-	default <T extends Translation> T getAsReference(LocaleSource localeSource) {
+	/**
+	 * Use this method if you use reference localizations.
+	 */
+	default T getAsReference(LocaleSource localeSource) {
 		return getAsReference(localeSource.locale());
 	}
 
-	default <T extends PluginLocale> T getDefaultLocale() {
-		return getLocale(Locales.DEFAULT);
+	/**
+	 * Use this method to get localization if you do not use reference localizations.<br>
+	 * The default localization is set by Sponge and is English (USA).
+	 */
+	default <L extends PluginLocale> L getDefaultSimpleLocale() {
+		return getSimple(Locales.DEFAULT);
 	}
 
-	default <T extends Translation> T getDefaultAsReference() {
+	/**
+	 * Use this method if you use reference localizations.<br>
+	 * The default localization is set by Sponge and is English (USA).
+	 */
+	default T getDefaultAsReference() {
 		return getAsReference(Locales.DEFAULT);
 	}
 
-	default <T extends PluginLocale> T getSystemLocale() {
-		return getLocale(Locale.getDefault());
+	/**
+	 * Use this method to get localization if you do not use reference localizations.<br>
+	 * The system localization is set by the configuration of the system on which the server is running and may differ from the default localization. This is convenient for using a separate localization for the console, if there is an appropriate language configuration.
+	 */
+	default <L extends PluginLocale> L getSystemSimpleLocale() {
+		return getSimple(Locale.getDefault());
 	}
 
-	default <T extends Translation> T getSystemAsReference() {
+	/**
+	 * Use this method if you use reference localizations.<br>
+	 * The system localization is set by the configuration of the system on which the server is running and may differ from the default localization. This is convenient for using a separate localization for the console, if there is an appropriate language configuration.
+	 */
+	default T getSystemAsReference() {
 		return getAsReference(Locale.getDefault());
+	}
+
+	/*
+	 * Getting the system locale.<br>
+	 * If Sponge does not support your system locale, the default locale for Sponge will be selected.
+	 */
+	default Locale getSystemOrDefaultLocale() {
+		return LocaleService.getInstance().getSystemOrDefaultLocale();
 	}
 
 }

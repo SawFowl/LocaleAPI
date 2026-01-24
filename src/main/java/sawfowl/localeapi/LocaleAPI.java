@@ -90,12 +90,13 @@ public class LocaleAPI {
 		localeService = new ImplementAPI().create(logger, configDirectory);
 		cause = Cause.of(EventContext.builder().add(EventContextKeys.PLUGIN, pluginContainer).build(), pluginContainer);
 		if(!configDirectory.toFile().exists()) configDirectory.toFile().mkdir();
-		registerDefaultPlaceholders();
+		registerDefaultPlaceholders();registerDefaultPlaceholders();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Listener
 	public void onConstruct(ConstructPluginEvent event) {
-		class ConstructEvent extends AbstractEvent implements LocaleServiseEvent.Construct {
+		Sponge.eventManager().post(new LocaleServiseEvent.Construct() {
 			@Override
 			public Cause cause() {
 				return cause;
@@ -104,11 +105,10 @@ public class LocaleAPI {
 			public LocaleService getLocaleService() {
 				return localeService;
 			}
-		}
-		LocaleServiseEvent.Construct constructEvent = new ConstructEvent();
-		Sponge.eventManager().post(constructEvent);
+		});
 	}
 
+	@SuppressWarnings("deprecation")
 	@Listener
 	public void onStarted(StartedEngineEvent<Server> event) {
 		class StartedEvent extends AbstractEvent implements LocaleServiseEvent.Started {

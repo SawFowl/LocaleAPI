@@ -45,9 +45,9 @@ sponge {
 			description("Lead Developer")
 		}
 		links {
-			homepage("https://ore.spongepowered.org/Semenkovsky_Ivan/LocaleAPI")
-			source("https://github.com/SawFowl/LocaleAPI")
-			issues("https://github.com/SawFowl/LocaleAPI/issues")
+			homepage("https://discord.gg/7xnZGSYJH9")
+			source("https://discord.gg/7xnZGSYJH9")
+			issues("https://discord.gg/7xnZGSYJH9")
 		}
 		dependency("spongeapi") {
 			optional(false)

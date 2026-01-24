@@ -22,6 +22,9 @@ public interface Text extends DataSerializable {
 		return builder().fromComponent(component);
 	}
 
+	/**
+	 * You can use the mini message format, json, or plain text with formatting codes using the & symbol.
+	 */
 	static Text of(String string) {
 		return builder().fromString(string);
 	}

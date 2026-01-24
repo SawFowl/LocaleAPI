@@ -190,8 +190,8 @@ class Watcher {
 	private void onModify(PluginContainer container, Locale locale, ConfigTypes type) {
 		UpdateInfo updateInfo = this.updateInfo.stream().filter(info -> info.locale.equals(locale) && info.container.metadata().id().equals(container.metadata().id())).findFirst().orElse(null);
 		if(updateInfo == null) {
-			if(!localeService.getLocales(container).contains(locale) || localeService.getLocales(container).getLocale(locale).getType() != type) return;
-			PluginLocale pluginLocale = localeService.getLocales(container).getLocale(locale);
+			if(!localeService.getLocales(container).contains(locale) || localeService.getLocales(container).getSimple(locale).getType() != type) return;
+			PluginLocale pluginLocale = localeService.getLocales(container).getSimple(locale);
 			pluginLocale.load();
 			this.updateInfo.add(new UpdateInfo(System.currentTimeMillis(), locale, container));
 			logger.info("[FileWatcher] Locale file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\" has been changed! Reloading...");

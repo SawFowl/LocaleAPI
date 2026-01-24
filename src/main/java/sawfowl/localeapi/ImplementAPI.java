@@ -17,6 +17,9 @@ import org.spongepowered.api.event.lifecycle.StoppedGameEvent;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.plugin.PluginContainer;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+
 import sawfowl.localeapi.api.EnumLocales;
 import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocaleService;
@@ -42,9 +45,9 @@ public class ImplementAPI {
 		((API) service).watchThread.stopWatch();
 	}
 
-	class API implements LocaleService {
+	class API extends LocaleService {
 
-		private Map<String, LocalesList> pluginLocales = new HashMap<String, LocalesList>();;
+		private Map<String, LocalesList<? extends Translation>> pluginLocales = new HashMap<>();;
 		private Map<String, ItemStackSerializerType> stackSerializers;
 		private Map<String, Class<? extends Translation>> defaultReferences;
 		private List<Locale> locales;
@@ -62,6 +65,7 @@ public class ImplementAPI {
 			watchThread = WatchRunner.getInstance();
 			allowSystem = locales.contains(system) || locales.stream().filter(locale -> (locale.toLanguageTag().equals(system.toLanguageTag()))).findFirst().isPresent();
 			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.lookup());
+			new InjectorAPI().createInjector();
 		}
 
 		@Override
@@ -99,22 +103,24 @@ public class ImplementAPI {
 
 		@Override
 		public <T extends Translation> void setDefaultReference(PluginContainer container, Class<T> defaultReference) {
+			Objects.requireNonNull(defaultReference);
 			if(defaultReferences.containsKey(container.metadata().id())) defaultReferences.remove(container.metadata().id());
 			defaultReferences.put(container.metadata().id(), defaultReference);
 		}
 
 		@Override
-		public Class<? extends Translation> getDefaultReference(PluginContainer container) {
+		public <T extends Translation> Class<T> getDefaultReference(PluginContainer container) {
 			return getDefaultReference(container.metadata().id());
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
-		public Class<? extends Translation> getDefaultReference(String pluginID) {
-			return defaultReferences.containsKey(pluginID) ? defaultReferences.get(pluginID) : null;
+		public <T extends Translation> Class<T> getDefaultReference(String pluginID) {
+			return defaultReferences.containsKey(pluginID) ? (Class<T>) defaultReferences.get(pluginID) : null;
 		}
 
 		@Override
-		public LocalesList createLocales(PluginContainer container) {
+		public <T extends Translation> LocalesList<T> createLocales(PluginContainer container) {
 			if(pluginLocales.containsKey(container.metadata().id())) return getLocales(container);
 			pluginLocales.put(container.metadata().id(), LocalesListImpl.create(container, configDirectory, this));
 			WatchRunner.initPlugin(container);
@@ -122,13 +128,21 @@ public class ImplementAPI {
 		}
 
 		@Override
-		public LocalesList getLocales(PluginContainer container) {
-			return getLocales(container.metadata().id());
+		public <T extends Translation> LocalesList<T> createLocales(PluginContainer container, Class<? extends T> translationReference) {
+			if(pluginLocales.containsKey(container.metadata().id())) return getLocales(container);
+			setDefaultReference(container, translationReference);
+			return createLocales(container);
 		}
 
 		@Override
-		public LocalesList getLocales(String plugin) {
-			return pluginLocales.get(plugin);
+		public <T extends Translation> LocalesList<T> getLocales(PluginContainer container) {
+			return getLocales(container.metadata().id());
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <T extends Translation> LocalesList<T> getLocales(String plugin) {
+			return (LocalesList<T>) pluginLocales.get(plugin);
 		}
 
 		@Override
@@ -154,6 +168,20 @@ public class ImplementAPI {
 
 		void startWatch() {
 			watchThread.run();
+		}
+
+	}
+
+	public final class InjectorAPI extends AbstractModule {
+
+		public com.google.inject.Injector createInjector() {
+			return Guice.createInjector(this);
+		}
+
+		@Override
+		protected void configure() {
+			bind(LocaleService.class).toInstance(service);
+			this.requestStaticInjection(LocaleService.class);
 		}
 
 	}

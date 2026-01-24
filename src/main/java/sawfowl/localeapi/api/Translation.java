@@ -11,9 +11,15 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 
+/**
+ * This interface is designed to simplify the creation of localizations and contains methods for simplifying the writing of formatted text and the use of replacements when getting text from localization.
+ */
 @ConfigSerializable
 public interface Translation {
 
+	/**
+	 * You can use the mini message format, json, or plain text with formatting codes using the & symbol.
+	 */
 	default Component deserialize(String string) {
 		return TextUtils.deserialize(string);
 	}
@@ -22,6 +28,9 @@ public interface Translation {
 		return Text.of(component);
 	}
 
+	/**
+	 * You can use the mini message format, json, or plain text with formatting codes using the & symbol.
+	 */
 	default Text text(String string) {
 		return Text.of(string);
 	}

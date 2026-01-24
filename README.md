@@ -7,49 +7,36 @@ javadoc -> <https://sawfowl.github.io/LocaleAPI>
 ```JAVA
 @Plugin("pluginid")
 public class Main {
-    private Main instance;
-    private Logger logger;
-    private static LocaleService localeService;
-    private PluginContainer pluginContainer;
-	private LocalesList locales;
-    public LocaleService getLocaleService() {
-        return localeService;
-    }
+	private Main instance;
+	private Logger logger;
+	private static LocaleService localeService;
+	private PluginContainer pluginContainer;
+	private LocalesList<Translation> locales;
+	public LocaleService getLocaleService() {
+		return localeService;
+	}
 
-    @Inject
-    public Main(PluginContainer pluginContainer, @ConfigDir(sharedRoot = false) Path configDirectory) {
-        this.pluginContainer = pluginContainer;
-    }
-
-    // Get API. Variant 1. This happens in event `ConstructPluginEvent`.  It's recommended if LocaleAPI is mandatory.
-    @Listener
-    public void onLocaleServisePostEvent(LocaleServiseEvent.Construct event) {
-        instance = this;
-        logger = LogManager.getLogger("PluginName");
-        localeService = event.getLocaleService();
+	@Inject
+	public Main(PluginContainer pluginContainer, @ConfigDir(sharedRoot = false) Path configDirectory) {
+		this.pluginContainer = pluginContainer;
+		instance = this;
+		logger = LogManager.getLogger("PluginName");
+		// Get API.
+		localeService = LocaleService.getInstance();
 		locales = localeService.createLocales(pluginContainer);
-        testLocales();
-    }
+		testLocales();
+	}
 
-    // Get API. Variant 2. This happens in event `StartedEngineEvent<Server>`. It's recommended if LocaleAPI is optional.
-    // In this case, you can specify another class as the event listener.
-    @Listener
-    public void onLocaleServisePostEvent(LocaleServiseEvent.Started event) {
-        localeService = event.getLocaleService();
-		locales = localeService.createLocales(pluginContainer);
-        testLocales();
-    }
-
-    public void testLocales() {
-        if(!localeService.localesExist(pluginContainer)) {
-            locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
-            locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
-            locales.getLocale(Locales.DEFAULT).addIfNotExist("Your string for localization.", "Optional comment", "Path");
-        }
-        // Get message from locale. You can get and use the player's localization 'player.locale();'.
-        // The boolean parameter defines what type of string serializer will be used.
-        logger.info(locales.getLocale(Locales.DEFAULT).getComponent("Path"));
-    }
+	public void testLocales() {
+		if(!localeService.localesExist(pluginContainer)) {
+			locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
+			locales.createSimpleTranslation(ConfigTypes.HOCON, Locales.DEFAULT);
+			locales.getSimple(Locales.DEFAULT).addIfNotExist("Your string for localization.", "Optional comment", "Path");
+		}
+		// Get message from locale. You can get and use the player's localization 'player.locale();'.
+		// The boolean parameter defines what type of string serializer will be used.
+		logger.info(locales.getSimple(Locales.DEFAULT).getComponent("Path"));
+	}
 }
 ```
 
@@ -57,14 +44,14 @@ public class Main {
 
 ```gradle
 repositories {
-    ...
-    maven { 
-        name = "JitPack"
-        url 'https://jitpack.io' 
-    }
+	...
+	maven { 
+		name = "AspectMaven"
+		url 'https://maven.aspect-realms.ru/repository/maven-public/' 
+	}
 }
 dependencies {
-    ...
-    implementation 'com.github.SawFowl:LocaleAPI:6.0'
+	...
+	implementation 'com.github.SawFowl:LocaleAPI:6.0'
 }
 ```

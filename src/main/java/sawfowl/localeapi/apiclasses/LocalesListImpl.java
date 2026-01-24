@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -24,16 +25,16 @@ import sawfowl.localeapi.apiclasses.config.locale.PluginLocaleImpl;
 import sawfowl.localeapi.apiclasses.config.locale.ReferencedLocaleImpl;
 import sawfowl.localeapi.utils.WatchRunner;
 
-public class LocalesListImpl implements LocalesList {
+public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
-	public static LocalesList create(PluginContainer container, Path localesDir, LocaleService localeService) {
-		return new LocalesListImpl(container, localesDir, localeService);
+	public static LocalesList<? extends Translation> create(PluginContainer container, Path localesDir, LocaleService localeService) {
+		return new LocalesListImpl<>(container, localesDir, localeService);
 	}
 
 	private Map<Locale, PluginLocale> locales = new HashMap<>();
 	private Path path;
 	private PluginContainer container;
-	private Class<? extends Translation> reference;
+	private Class<T> reference;
 	private LocaleService localeService;
 	private static final String DOT = ".";
 	private LocalesListImpl(PluginContainer container, Path localesDir, LocaleService localeService) {
@@ -41,14 +42,16 @@ public class LocalesListImpl implements LocalesList {
 		path = localesDir.resolve(container.metadata().id());
 		this.localeService = localeService;
 		if(path.toFile().exists() && path.toFile().isDirectory()) for(File file : path.toFile().listFiles()) {
-			if(!file.getName().startsWith(DOT) || !file.getName().contains(DOT) || file.getName().endsWith(DOT)) continue;
-			String[] nameAndExtension = file.getName().split(DOT);
+			if(file.getName().startsWith(DOT) || !file.getName().contains(DOT) || file.getName().endsWith(DOT)) continue;
+			String[] nameAndExtension = split(file.getName(), '.'); // For some reason, String.split(".") returns an empty array.
 			if(EnumLocales.isValisTag(nameAndExtension[0]) && ConfigTypes.isValidExtension(nameAndExtension[1])) {
 				if(localeService.getDefaultReference(container) == null) {
 					createSimpleTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]));
 				} else createReferenceTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]), localeService.getDefaultReference(container));
 			}
+			nameAndExtension = null;
 		}
+		saveAssetLocales();
 	}
 
 	@Override
@@ -59,36 +62,36 @@ public class LocalesListImpl implements LocalesList {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<T> clazz) {
+	public <O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<O> clazz) {
 		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale));
-		if(reference == null) reference = clazz;
-		return (ReferencedLocale<T>) locales.get(locale);
+		if(reference == null) reference = (Class<T>) clazz;
+		return (ReferencedLocale<O>) locales.get(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Translation> ReferencedLocale<T> createReferenceTranslation(ConfigTypes configType, Locale locale, T object) {
+	public <O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, O object) {
 		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale));
-		if(reference == null) reference = object.getClass();
-		return (ReferencedLocale<T>) locales.get(locale);
+		if(reference == null) reference = (Class<T>) object.getClass();
+		return (ReferencedLocale<O>) locales.get(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends PluginLocale> T getLocale(Locale locale) throws ClassCastException {
-		return (T) (locales.containsKey(locale) ? locales.get(locale) : locales.get(Locales.DEFAULT));
+	public <L extends PluginLocale> L getSimple(Locale locale) throws ClassCastException {
+		return (L) (locales.containsKey(locale) ? locales.get(locale) : locales.get(Locales.DEFAULT));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends PluginLocale> T remove(Locale locale) throws ClassCastException {
-		return (T) locales.remove(locale);
+	public <L extends PluginLocale> L remove(Locale locale) throws ClassCastException {
+		return (L) locales.remove(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends PluginLocale> Stream<T> stream() {
-		return (Stream<T>) locales.values().stream();
+	public <L extends PluginLocale> Stream<L> stream() {
+		return (Stream<L>) locales.values().stream();
 	}
 
 	@Override
@@ -150,6 +153,28 @@ public class LocalesListImpl implements LocalesList {
 
 	private String getPluginID() {
 		return container.metadata().id();
+	}
+
+	private String[] split(String string, char ch) {
+		int off = 0;
+		int next;
+		ArrayList<String> list = new ArrayList<>();
+		while ((next = string.indexOf(ch, off)) != -1) {
+			list.add(string.substring(off, next));
+			off = next + 1;
+		}
+		// If no match was found, return this
+		if (off == 0) return new String[] {string};
+
+		// Add remaining segment
+		list.add(string.substring(off, string.length()));
+
+		// Construct result
+		int resultSize = list.size();
+		while (resultSize > 0 && list.get(resultSize - 1).isEmpty()) {
+			resultSize--;
+		}
+		return list.subList(0, resultSize).toArray(new String[resultSize]);
 	}
 
 

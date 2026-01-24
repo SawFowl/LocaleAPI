@@ -16,13 +16,13 @@ import sawfowl.localeapi.apiclasses.config.ConfigImpl;
 
 public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 
-	public static final PluginLocaleImpl create(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList localesList) {
+	public static final PluginLocaleImpl create(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
 		return new PluginLocaleImpl(plugin, configDir, configType, itemStackSerializerType, locale, localesList);
 	}
 
 	private final Locale locale;
-	private final LocalesList localesList;
-	private PluginLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList localesList) {
+	private final LocalesList<? extends Translation> localesList;
+	private PluginLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
 		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType);
 		this.locale = locale;
 		this.localesList = localesList;
@@ -35,17 +35,17 @@ public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(L config) {
+	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(T config) {
 		Objects.requireNonNull(config);
 		localesList.remove(locale);
-		return (O) localesList.createReferenceTranslation(getType(), locale, config);
+		return (O) ((LocalesList<T>) localesList).createReferenceTranslation(getType(), locale, config);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <L extends Translation, O extends ReferencedLocale<L>> O toReferenceTranslation(Class<L> config) {
+	public <T extends Translation, O extends ReferencedLocale<T>> O toReferenceTranslation(Class<T> config) {
 		localesList.remove(locale);
-		return (O) localesList.createReferenceTranslation(getType(), locale, config);
+		return (O) ((LocalesList<T>) localesList).createReferenceTranslation(getType(), locale, config);
 	}
 
 }

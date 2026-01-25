@@ -19,6 +19,7 @@ import org.spongepowered.plugin.PluginContainer;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 import sawfowl.localeapi.api.EnumLocales;
 import sawfowl.localeapi.api.Translation;
@@ -172,9 +173,9 @@ public class ImplementAPI {
 
 	}
 
-	public final class InjectorAPI extends AbstractModule {
+	final class InjectorAPI extends AbstractModule {
 
-		public com.google.inject.Injector createInjector() {
+		Injector createInjector() {
 			return Guice.createInjector(this);
 		}
 

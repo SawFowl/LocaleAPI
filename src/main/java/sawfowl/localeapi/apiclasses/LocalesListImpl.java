@@ -47,7 +47,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 			if(EnumLocales.isValisTag(nameAndExtension[0]) && ConfigTypes.isValidExtension(nameAndExtension[1])) {
 				if(localeService.getDefaultReference(container) == null) {
 					createSimpleTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]));
-				} else createReferenceTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]), localeService.getDefaultReference(container));
+				} else createReferencedTranslation(ConfigTypes.getTypeByExtension(nameAndExtension[1]), EnumLocales.find(nameAndExtension[0]), localeService.getDefaultReference(container));
 			}
 			nameAndExtension = null;
 		}
@@ -62,7 +62,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<O> clazz) {
+	public <O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, Class<O> clazz) {
 		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale));
 		if(reference == null) reference = (Class<T>) clazz;
 		return (ReferencedLocale<O>) locales.get(locale);
@@ -70,7 +70,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, O object) {
+	public <O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, O object) {
 		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale));
 		if(reference == null) reference = (Class<T>) object.getClass();
 		return (ReferencedLocale<O>) locales.get(locale);
@@ -137,7 +137,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 						container.logger().info("Locale config " + locale.toLanguageTag() + configTypeName + " for plugin \"" + getPluginID() + "\" has been saved");
 						if(reference == null) {
 							createSimpleTranslation(configType, locale);
-						} else createReferenceTranslation(configType, locale, reference);
+						} else createReferencedTranslation(configType, locale, reference);
 					} catch (IOException e) {
 						container.logger().error(e.getLocalizedMessage());
 					}

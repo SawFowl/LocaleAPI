@@ -33,13 +33,13 @@ public interface LocalesList<@Nullable T extends Translation> {
 	 * Creating a reference localization. You will not need to write and read data yourself by accessing the configuration sections.<br>
 	 * You will be provided with the object you specified with all the data from the configuration file corresponding to the specified localization.
 	 */
-	<O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, Class<O> clazz);
+	<O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, Class<O> clazz);
 
 	/**
 	 * Creating a reference localization. You will not need to write and read data yourself by accessing the configuration sections.<br>
 	 * You will be provided with the object you specified with all the data from the configuration file corresponding to the specified localization.
 	 */
-	<O extends T> ReferencedLocale<O> createReferenceTranslation(ConfigTypes configType, Locale locale, O object);
+	<O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, O object);
 
 	/**
 	 * Use this method to get localization if you do not use reference localizations.
@@ -86,7 +86,7 @@ public interface LocalesList<@Nullable T extends Translation> {
 	 * Use this method if you use reference localizations.
 	 */
 	@SuppressWarnings("unchecked")
-	default T getAsReference(Locale locale) {
+	default T getAsReferenced(Locale locale) {
 		return (T) getSimple(locale).toReference().get();
 	}
 
@@ -100,8 +100,8 @@ public interface LocalesList<@Nullable T extends Translation> {
 	/**
 	 * Use this method if you use reference localizations.
 	 */
-	default T getAsReference(LocaleSource localeSource) {
-		return getAsReference(localeSource.locale());
+	default T getAsReferenced(LocaleSource localeSource) {
+		return getAsReferenced(localeSource.locale());
 	}
 
 	/**
@@ -116,8 +116,8 @@ public interface LocalesList<@Nullable T extends Translation> {
 	 * Use this method if you use reference localizations.<br>
 	 * The default localization is set by Sponge and is English (USA).
 	 */
-	default T getDefaultAsReference() {
-		return getAsReference(Locales.DEFAULT);
+	default T getDefaultAsReferenced() {
+		return getAsReferenced(Locales.DEFAULT);
 	}
 
 	/**
@@ -132,8 +132,8 @@ public interface LocalesList<@Nullable T extends Translation> {
 	 * Use this method if you use reference localizations.<br>
 	 * The system localization is set by the configuration of the system on which the server is running and may differ from the default localization. This is convenient for using a separate localization for the console, if there is an appropriate language configuration.
 	 */
-	default T getSystemAsReference() {
-		return getAsReference(Locale.getDefault());
+	default T getSystemAsReferenced() {
+		return getAsReferenced(Locale.getDefault());
 	}
 
 	/*

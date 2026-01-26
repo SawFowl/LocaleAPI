@@ -155,7 +155,7 @@ class Watcher {
 			?
 			localeService.getLocales(container).createSimpleTranslation(type, locale)
 			:
-			localeService.getLocales(container).createReferenceTranslation(type, locale, localeService.getDefaultReference(container));
+			localeService.getLocales(container).createReferencedTranslation(type, locale, localeService.getDefaultReference(container));
 		Sponge.eventManager().post(new LocaleEvent.Create() {
 
 			@Override

@@ -18,19 +18,20 @@ import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends ConfigImpl implements ReferencedConfig<T>{
 
-	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz) {
-		return new ReferencedConfigImpl<T, ConfigurationNode>(plugin, configDir, name, configType, itemStackSerializerType, clazz);
+	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz2) {
+		return new ReferencedConfigImpl<T, ConfigurationNode>(plugin, configDir, name, configType, itemStackSerializerType, serializers, clazz2);
 	}
 
-	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object) {
-		return new ReferencedConfigImpl<T, ConfigurationNode>(plugin, configDir, name, configType, itemStackSerializerType, object);
+	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
+		return new ReferencedConfigImpl<T, ConfigurationNode>(plugin, configDir, name, configType, itemStackSerializerType, serializers, object);
 	}
 
 	private ConfigurationReference<N> configurationReference;
 	private ValueReference<T, N> valueReference;
 	private Class<T> clazz;
-	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz) {
-		super(plugin, configDir, name, configType, itemStackSerializerType);
+
+	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
+		super(plugin, configDir, name, configType, itemStackSerializerType, serializers);
 		Objects.requireNonNull(clazz);
 		this.clazz = clazz;
 		load();
@@ -38,8 +39,8 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	}
 
 	@SuppressWarnings("unchecked")
-	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object) {
-		super(plugin, configDir, name, configType, itemStackSerializerType);
+	protected ReferencedConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
+		super(plugin, configDir, name, configType, itemStackSerializerType, serializers);
 		Objects.requireNonNull(object);
 		this.clazz = (Class<T>) object.getClass();
 		load();

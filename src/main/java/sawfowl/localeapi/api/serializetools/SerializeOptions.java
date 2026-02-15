@@ -73,6 +73,27 @@ public class SerializeOptions {
 		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(selectSerializersCollection(serializerType)));
 	}
 
+	/**
+	 * Creating a YAML config with serializers applied and standard options preserved.
+	 */
+	public static YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
+	}
+
+	/**
+	 * Creating a HOCON config with serializers applied and standard options preserved.
+	 */
+	public static HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers)));
+	}
+
+	/**
+	 * Creating a JSON config with serializers applied and standard options preserved.
+	 */
+	public static GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers)));
+	}
+
 	public static ConfigurationNode createVirtualNode(ItemStackSerializerType serializerType) {
 		return BasicConfigurationNode.root(o -> o.options().serializers(selectSerializersCollection(serializerType)));
 	}
@@ -88,11 +109,11 @@ public class SerializeOptions {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType) {
+	public static <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
 		switch (configType) {
-		case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType).path(path).build();
-		case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType).path(path).build();
-		case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType).path(path).build();
+		case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
+		case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
+		case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 		default: throw new IllegalArgumentException("Inappropriate value: " + configType);
 		}
 	}
@@ -123,6 +144,10 @@ public class SerializeOptions {
 			case JSON: return JSON_SERIALIZER_COLLECTION_VARIANT;
 			default: return SPONGE_SERIALIZER_COLLECTION_VARIANT;
 		}
+	}
+
+	private static TypeSerializerCollection merge(TypeSerializerCollection laColection, TypeSerializerCollection otherCollection) {
+		return otherCollection == null ? laColection : otherCollection.childBuilder().registerAll(laColection).build();
 	}
 
 }

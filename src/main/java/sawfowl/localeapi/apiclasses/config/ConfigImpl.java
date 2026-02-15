@@ -24,8 +24,8 @@ import sawfowl.localeapi.api.serializetools.SerializeOptions;
 
 public class ConfigImpl implements Config {
 
-	public static final ConfigImpl create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType) {
-		return new ConfigImpl(plugin, configDir, name, configType, itemStackSerializerType);
+	public static final ConfigImpl create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
+		return new ConfigImpl(plugin, configDir, name, configType, itemStackSerializerType, serializers);
 	}
 
 	private final ConfigTypes type;
@@ -36,12 +36,14 @@ public class ConfigImpl implements Config {
 	private final PluginContainer container;
 	private Path path;
 	private String name;
-	protected ConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType) {
+	private TypeSerializerCollection serializers;
+	protected ConfigImpl(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
 		this.container = plugin;
 		this.path = configDir.resolve(name + configType.toString());
 		this.type = configType;
 		this.name = name;
 		this.itemStackSerializerType = itemStackSerializerType;
+		this.serializers = serializers;
 		if(!(this instanceof ReferencedConfigImpl)) load();
 	}
 
@@ -71,14 +73,14 @@ public class ConfigImpl implements Config {
 	@Override
 	public <T, O extends ReferencedConfig<T>> O toReference(T config) {
 		Objects.requireNonNull(config);
-		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(getContainer(), path, getName(), type, getItemStackSerializerType(), config)) : referenced);
+		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(getContainer(), path, getName(), type, getItemStackSerializerType(), serializers, config)) : referenced);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T, O extends ReferencedConfig<T>> O toReference(Class<T> config) {
 		Objects.requireNonNull(config);
-		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(getContainer(), path, getName(), type, getItemStackSerializerType(), config)) : referenced);
+		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(getContainer(), path, getName(), type, getItemStackSerializerType(), serializers, config)) : referenced);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -200,11 +202,11 @@ public class ConfigImpl implements Config {
 	@SuppressWarnings("unchecked")
 	<B extends AbstractConfigurationLoader.Builder<B, ?>> B selectBuilder(ConfigTypes loaderType) {
 		switch (loaderType) {
-			case YAML: return (B) SerializeOptions.createYamlConfigurationLoader(itemStackSerializerType).path(path);
+			case YAML: return (B) SerializeOptions.createYamlConfigurationLoader(itemStackSerializerType, serializers).path(path);
 			//case XML: return (B) XmlConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).writesExplicitType(true);
-			case JSON: return (B) SerializeOptions.createJsonConfigurationLoader(itemStackSerializerType).path(path);
+			case JSON: return (B) SerializeOptions.createJsonConfigurationLoader(itemStackSerializerType, serializers).path(path);
 			//case JACKSON: return (B) JacksonConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).fieldValueSeparatorStyle(FieldValueSeparatorStyle.SPACE_BOTH_SIDES);
-			default: return (B) SerializeOptions.createHoconConfigurationLoader(itemStackSerializerType).path(path);
+			default: return (B) SerializeOptions.createHoconConfigurationLoader(itemStackSerializerType, serializers).path(path);
 		}
 	}
 

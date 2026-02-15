@@ -23,7 +23,7 @@ public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 	private final Locale locale;
 	private final LocalesList<? extends Translation> localesList;
 	private PluginLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType);
+		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null);
 		this.locale = locale;
 		this.localesList = localesList;
 	}

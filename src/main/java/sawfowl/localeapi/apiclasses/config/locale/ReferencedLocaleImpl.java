@@ -24,12 +24,12 @@ public class ReferencedLocaleImpl<T extends Translation> extends ReferencedConfi
 
 	private final Locale locale;
 	private ReferencedLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz, Locale locale) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, clazz);
+		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, clazz);
 		this.locale = locale;
 	}
 
 	private ReferencedLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object, Locale locale) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, object);
+		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, object);
 		this.locale = locale;
 	}
 

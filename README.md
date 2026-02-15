@@ -9,7 +9,7 @@ javadoc -> <https://sawfowl.github.io/LocaleAPI>
 public class Main {
 	private Main instance;
 	private Logger logger;
-	private static LocaleService localeService;
+	private LocaleService localeService;
 	private PluginContainer pluginContainer;
 	private LocalesList<Translation> locales;
 	public LocaleService getLocaleService() {

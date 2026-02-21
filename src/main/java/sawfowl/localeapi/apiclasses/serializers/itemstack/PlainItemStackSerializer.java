@@ -11,7 +11,11 @@ import org.spongepowered.configurate.serialize.TypeSerializer;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
 import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
 
-public class PlainItemStackSerializer implements TypeSerializer<ItemStack> {
+public final class PlainItemStackSerializer implements TypeSerializer<ItemStack> {
+
+	public static final PlainItemStackSerializer INSTANCE = new PlainItemStackSerializer();
+
+	private PlainItemStackSerializer(){}
 
 	@Override
 	public ItemStack deserialize(Type type, ConfigurationNode node) throws SerializationException {

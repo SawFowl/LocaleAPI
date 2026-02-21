@@ -2,6 +2,7 @@ package sawfowl.localeapi.api.config;
 
 import java.nio.file.Path;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
@@ -24,7 +25,7 @@ public interface ReferencedConfig<T> extends Config {
 	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
 	 * @param clazz - The serializable class of your configuration.
 	 */
-	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
+	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, Class<T> clazz) {
 		return (ReferencedConfig<T>) ReferencedConfigImpl.create(plugin, configDir, name, configType, itemStackSerializerType, serializers, clazz);
 	}
 
@@ -38,7 +39,7 @@ public interface ReferencedConfig<T> extends Config {
 	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
 	 * @param object - An object of the serializable class of your configuration.
 	 */
-	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
+	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, T object) {
 		return (ReferencedConfig<T>) ReferencedConfigImpl.create(plugin, configDir, name, configType, itemStackSerializerType, serializers, object);
 	}
 

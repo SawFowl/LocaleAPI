@@ -20,7 +20,11 @@ import com.google.gson.JsonSyntaxException;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
 
-public class JsonElementSerializer implements TypeSerializer<JsonElement> {
+public final class JsonElementSerializer implements TypeSerializer<JsonElement> {
+
+	public static final JsonElementSerializer INSTANCE = new JsonElementSerializer();
+
+	private JsonElementSerializer(){}
 
 	@Override
 	public JsonElement deserialize(Type type, ConfigurationNode node) throws SerializationException {

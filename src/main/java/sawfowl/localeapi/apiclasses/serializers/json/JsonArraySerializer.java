@@ -10,7 +10,11 @@ import org.spongepowered.configurate.serialize.TypeSerializer;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
-public class JsonArraySerializer implements TypeSerializer<JsonArray> {
+public final class JsonArraySerializer implements TypeSerializer<JsonArray> {
+
+	public static final JsonArraySerializer INSTANCE = new JsonArraySerializer();
+
+	private JsonArraySerializer(){}
 
 	@Override
 	public JsonArray deserialize(Type type, ConfigurationNode node) throws SerializationException {

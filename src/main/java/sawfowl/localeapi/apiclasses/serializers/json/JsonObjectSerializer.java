@@ -19,6 +19,9 @@ import com.google.gson.TypeAdapter;
 public class JsonObjectSerializer implements TypeSerializer<JsonObject> {
 
 	final TypeAdapter<JsonElement> strictAdapter = new Gson().getAdapter(JsonElement.class);
+	public static final JsonObjectSerializer INSTANCE = new JsonObjectSerializer();
+
+	private JsonObjectSerializer(){}
 
 	@Override
 	public JsonObject deserialize(Type type, ConfigurationNode node) throws SerializationException {

@@ -1,7 +1,10 @@
 package sawfowl.localeapi.api.serializetools;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -14,7 +17,6 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.objectmapping.ObjectMapper;
 import org.spongepowered.configurate.objectmapping.meta.NodeResolver;
-import org.spongepowered.configurate.serialize.TypeSerializer;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
@@ -29,6 +31,8 @@ import net.kyori.adventure.serializer.configurate4.ConfigurateComponentSerialize
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocalisedComment;
 import sawfowl.localeapi.apiclasses.LocalisedCommentFactory;
+import sawfowl.localeapi.apiclasses.serializers.ConfigTypeSerializer;
+import sawfowl.localeapi.apiclasses.serializers.LAEnumItemStackTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.itemstack.ItemStackSerializer;
 import sawfowl.localeapi.apiclasses.serializers.itemstack.PlainItemStackSerializer;
 import sawfowl.localeapi.apiclasses.serializers.json.JsonArraySerializer;
@@ -41,13 +45,11 @@ import sawfowl.localeapi.apiclasses.serializers.json.JsonPrimitiveSerializer;
  */
 public class SerializeOptions {
 
-	private static final TypeSerializer<ItemStack> SIMPLE_ITEMSTACK_SERIALIZER = new PlainItemStackSerializer();
-	private static final TypeSerializer<ItemStack> JSON_ITEMSTACK_SERIALIZER = new ItemStackSerializer();
-	public static final ObjectMapper.Factory FACTORY = ObjectMapper.factoryBuilder().addProcessor(LocalisedComment.class, new LocalisedCommentFactory()).addNodeResolver(NodeResolver.onlyWithSetting()).build();
-	public static final TypeSerializerCollection JSON_SERIALIZERS = TypeSerializerCollection.defaults().childBuilder().register(JsonElement.class, new JsonElementSerializer()).register(JsonObject.class, new JsonObjectSerializer()).register(JsonArray.class, new JsonArraySerializer()).register(JsonPrimitive.class, new JsonPrimitiveSerializer()).build();
-	public static final TypeSerializerCollection SIMPLE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStack.class, SIMPLE_ITEMSTACK_SERIALIZER).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
-	public static final TypeSerializerCollection JSON_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStack.class, JSON_ITEMSTACK_SERIALIZER).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
-	public static final TypeSerializerCollection SPONGE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).registerAll(Sponge.game().configManager().serializers()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
+	public static final ObjectMapper.Factory FACTORY = ObjectMapper.factoryBuilder().addProcessor(LocalisedComment.class, LocalisedCommentFactory.INSTANCE).addNodeResolver(NodeResolver.onlyWithSetting()).build();
+	public static final TypeSerializerCollection JSON_SERIALIZERS = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).register(JsonElement.class, JsonElementSerializer.INSTANCE).register(JsonObject.class, JsonObjectSerializer.INSTANCE).register(JsonArray.class, JsonArraySerializer.INSTANCE).register(JsonPrimitive.class, JsonPrimitiveSerializer.INSTANCE).build();
+	public static final TypeSerializerCollection SIMPLE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).register(ItemStack.class, PlainItemStackSerializer.INSTANCE).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
+	public static final TypeSerializerCollection JSON_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).register(ItemStack.class, ItemStackSerializer.INSTANCE).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
+	public static final TypeSerializerCollection SPONGE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).registerAll(Sponge.game().configManager().serializers()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
 	public static final ConfigurationOptions SIMPLE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SIMPLE_SERIALIZER_COLLECTION_VARIANT);
 	public static final ConfigurationOptions JSON_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(JSON_SERIALIZER_COLLECTION_VARIANT);
 	public static final ConfigurationOptions SPONGE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SPONGE_SERIALIZER_COLLECTION_VARIANT);
@@ -76,21 +78,21 @@ public class SerializeOptions {
 	/**
 	 * Creating a YAML config with serializers applied and standard options preserved.
 	 */
-	public static YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+	public static YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
 	}
 
 	/**
 	 * Creating a HOCON config with serializers applied and standard options preserved.
 	 */
-	public static HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+	public static HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	/**
 	 * Creating a JSON config with serializers applied and standard options preserved.
 	 */
-	public static GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+	public static GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(merge(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
@@ -109,7 +111,7 @@ public class SerializeOptions {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType, TypeSerializerCollection otherSerializers) {
+	public static <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		switch (configType) {
 		case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
 		case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
@@ -146,8 +148,9 @@ public class SerializeOptions {
 		}
 	}
 
-	private static TypeSerializerCollection merge(TypeSerializerCollection laColection, TypeSerializerCollection otherCollection) {
-		return otherCollection == null ? laColection : otherCollection.childBuilder().registerAll(laColection).build();
+	public static TypeSerializerCollection merge(@NotNull TypeSerializerCollection first, @Nullable TypeSerializerCollection second) {
+		Objects.requireNonNull(first);
+		return second == null ? first : second.childBuilder().registerAll(first).build();
 	}
 
 }

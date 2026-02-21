@@ -15,9 +15,12 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.TypeAdapter;
 
-public class JsonPrimitiveSerializer implements TypeSerializer<JsonPrimitive> {
+public final class JsonPrimitiveSerializer implements TypeSerializer<JsonPrimitive> {
 
 	private static final TypeAdapter<JsonElement> STRICT_ADAPTER = new Gson().getAdapter(JsonElement.class);
+	public static final JsonPrimitiveSerializer INSTANCE = new JsonPrimitiveSerializer();
+
+	private JsonPrimitiveSerializer() {}
 
 	@Override
 	public JsonPrimitive deserialize(Type type, ConfigurationNode node) throws SerializationException {

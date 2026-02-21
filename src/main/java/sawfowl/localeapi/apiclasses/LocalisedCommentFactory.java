@@ -10,9 +10,12 @@ import sawfowl.localeapi.ImplementAPI;
 import sawfowl.localeapi.api.LocaleService;
 import sawfowl.localeapi.api.LocalisedComment;
 
-public class LocalisedCommentFactory implements Factory<LocalisedComment, Object> {
+public final class LocalisedCommentFactory implements Factory<LocalisedComment, Object> {
 
 	private static final LocaleService LOCALE_SERVICE = ImplementAPI.getLocaleService();
+	public static final LocalisedCommentFactory INSTANCE = new LocalisedCommentFactory();
+
+	private LocalisedCommentFactory(){}
 
 	@Override
 	public Processor<Object> make(LocalisedComment data, Type type) {

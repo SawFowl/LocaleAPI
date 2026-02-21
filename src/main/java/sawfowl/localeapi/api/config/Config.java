@@ -28,7 +28,7 @@ public interface Config {
 	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
 	 * @return
 	 */
-	static Config create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
+	static Config create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers) {
 		return ConfigImpl.create(plugin, configDir, name, configType, itemStackSerializerType, serializers);
 	}
 

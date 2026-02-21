@@ -21,7 +21,11 @@ import com.google.gson.JsonParser;
 import sawfowl.localeapi.api.serializetools.SerializeOptions;
 import sawfowl.localeapi.api.serializetools.itemstack.SerializedItemStack;
 
-public class ItemStackSerializer implements TypeSerializer<ItemStack> {
+public final class ItemStackSerializer implements TypeSerializer<ItemStack> {
+
+	public static final ItemStackSerializer INSTANCE = new ItemStackSerializer();
+
+	private ItemStackSerializer(){}
 
 	@Override
 	public ItemStack deserialize(Type type, ConfigurationNode node) throws SerializationException {

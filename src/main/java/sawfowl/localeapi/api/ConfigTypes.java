@@ -13,6 +13,10 @@ public enum ConfigTypes {
 		public String getExtension() {
 			return "conf";
 		}
+		@Override
+		public String getTypeName() {
+			return "Hocon";
+		}
 	},
 	JSON(".json") {
 		@Override
@@ -23,6 +27,10 @@ public enum ConfigTypes {
 		public String getExtension() {
 			return "json";
 		}
+		@Override
+		public String getTypeName() {
+			return "Json";
+		}
 	},
 	YAML(".yml") {
 		@Override
@@ -32,6 +40,10 @@ public enum ConfigTypes {
 		@Override
 		public String getExtension() {
 			return "yml";
+		}
+		@Override
+		public String getTypeName() {
+			return "Yaml";
 		}
 	},
 	/**PROPERTIES(".properties") {
@@ -44,7 +56,11 @@ public enum ConfigTypes {
 			return "properties";
 		}
 	}*/
-	UNKNOWN(""){};
+	UNKNOWN(""){
+		@Override
+		public String getTypeName() {
+			return "UNKNOWN";
+		}};
 
 	ConfigTypes(String string) {}
 
@@ -52,8 +68,10 @@ public enum ConfigTypes {
 		return "";
 	}
 
+	public abstract String getTypeName();
+
 	public static ConfigTypes find(String type) {
-		return Stream.of(ConfigTypes.values()).filter(value -> value.toString().equals(type)).findFirst().orElse(UNKNOWN);
+		return Stream.of(ConfigTypes.values()).filter(value -> value.getTypeName().equalsIgnoreCase(type) || value.toString().equals(type)).findFirst().orElse(UNKNOWN);
 	}
 
 	public static boolean isValidExtension(String extension) {

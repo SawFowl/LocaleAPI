@@ -22,7 +22,7 @@ public final class ConfigTypeSerializer implements TypeSerializer<ConfigTypes> {
 
 	@Override
 	public void serialize(Type type, @Nullable ConfigTypes configType, ConfigurationNode node) throws SerializationException {
-		node.set(String.class, configType.toString());
+		node.set(String.class, configType.getTypeName());
 	}
 
 }

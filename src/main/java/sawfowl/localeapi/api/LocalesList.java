@@ -49,7 +49,7 @@ public interface LocalesList<@Nullable T extends Translation> {
 	/**
 	 * Removing localization.
 	 */
-	<L extends PluginLocale> L remove(Locale locale) throws ClassCastException ;
+	<L extends PluginLocale> L remove(Locale locale) throws ClassCastException;
 
 	/**
 	 * See {@link List#stream()}

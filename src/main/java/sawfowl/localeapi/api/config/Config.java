@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
+
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
@@ -12,6 +13,7 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.plugin.PluginContainer;
 
 import io.leangen.geantyref.TypeToken;
+
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.apiclasses.config.ConfigImpl;
@@ -162,7 +164,6 @@ public interface Config {
 	default boolean getBoolean(Object... path) {
 		return getRootNode().node(path).getBoolean();
 	}
-
 
 	/**
 	 * See {@link ConfigurationNode#getList(Class)}

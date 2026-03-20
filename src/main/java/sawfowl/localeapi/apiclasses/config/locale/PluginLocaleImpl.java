@@ -7,8 +7,8 @@ import java.util.Locale;
 import java.util.Objects;
 
 import org.jetbrains.annotations.Nullable;
+
 import org.spongepowered.api.util.locale.Locales;
-import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.plugin.PluginContainer;
 

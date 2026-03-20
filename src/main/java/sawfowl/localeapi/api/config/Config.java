@@ -176,7 +176,6 @@ public interface Config {
 		}
 	}
 
-
 	/**
 	 * See {@link ConfigurationNode#get(Class)}
 	 */

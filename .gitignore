@@ -26,4 +26,12 @@ hs_err_pid*
 .classpath
 .project
 /.settings
-/bin
+api/.settings
+api/build
+api/bin
+plugin/.settings
+plugin/build
+plugin/bin
+shading/.settings
+shading/build
+shading/bin

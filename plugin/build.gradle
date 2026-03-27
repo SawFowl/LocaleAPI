@@ -1,0 +1,52 @@
+plugins {
+	id("org.spongepowered.gradle.plugin") version "2.3.0"
+	id("com.gradleup.shadow") version "9.0.0-beta4"
+}
+
+dependencies {
+	implementation project(":shading")
+	implementation project(":api")
+	implementation "org.spongepowered:spongeapi:${api}"
+	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
+}
+
+shadowJar {
+	archiveBaseName.set("${rootProject.name}-${rootProject.version}")
+	archiveClassifier.set('')
+	dependencies {
+		exclude(dependency("org.spongepowered:spongeapi:${api}"))
+		include(project(path: ':shading'))
+		include(project(path: ':api'))
+	}
+}
+
+sponge {
+	apiVersion("${api}")
+	loader {
+		name("java_plain")
+		version("1.0")
+	}
+	license("GPL-3.0")
+	plugin("localeapi") {
+		displayName(rootProject.name.capitalize())
+		version("${major}.${minor}.${patch}")
+		entrypoint("${rootProject.group}.LocaleAPI")
+		description("Locale API for Sponge plugins.")
+		contributor("SawFowl") {
+			description("Lead Developer")
+		}
+		links {
+			homepage("https://discord.gg/7xnZGSYJH9")
+			source("https://discord.gg/7xnZGSYJH9")
+			issues("https://discord.gg/7xnZGSYJH9")
+		}
+		dependency("spongeapi") {
+			optional(false)
+			loadOrder("after")
+			version("${api}")
+		}
+	}
+}
+
+// Создаем fat JAR с затененными зависимостями
+tasks.build.dependsOn tasks.shadowJar

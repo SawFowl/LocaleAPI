@@ -1,0 +1,42 @@
+dependencies {
+	implementation project(":shading")
+	implementation "org.spongepowered:spongeapi:${api}"
+	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	archiveClassifier = 'sources'
+	from sourceSets.main.allSource
+	exclude('sawfowl/localeapi/apiclasses/**')
+	exclude('sawfowl/localeapi/ImplementAPI.java')
+	exclude('sawfowl/localeapi/LocaleAPI.java')
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	archiveClassifier = 'javadoc'
+	from javadoc.destinationDir
+}
+
+artifacts {
+	archives sourcesJar
+	archives javadocJar
+}
+
+configurations {
+	doc {
+		transitive = false
+	}
+}
+
+javadoc {
+	options.encoding = 'UTF-8'
+	options.links("https://jd.spongepowered.org/spongeapi/${api}")
+	options.links("https://jd.advntr.dev/api/4.16.0/")
+	source configurations.doc.collect { zipTree(it) }
+	include 'sawfowl/localeapi/api/*.java'
+	include 'sawfowl/localeapi/api/event/*.java'
+	include 'sawfowl/localeapi/api/serializetools/*.java'
+	include 'sawfowl/localeapi/api/serializetools/itemstack/*.java'
+	include 'sawfowl/localeapi/api/placeholders/*.java'
+	options.addStringOption('Xdoclint:none', '-quiet')
+}

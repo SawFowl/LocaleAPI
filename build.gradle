@@ -1,95 +1,37 @@
 plugins {
-	id("java")
 	id("eclipse")
-	id("org.spongepowered.gradle.plugin") version "2.3.0"
 }
 
 group = "sawfowl.localeapi"
 version = "${major}.${minor}.${patch}-${suffix}-S${api}"
 
-java {
-	sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
-}
-
-repositories {
-	mavenCentral()
-	maven {
-		name = "Sponge"
-		url = "https://repo.spongepowered.org/repository/maven-public"
+subprojects {
+	apply {
+		plugin 'java'
+		plugin 'eclipse'
 	}
-}
+	java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
-}
-
-dependencies {
-	implementation "org.spongepowered:spongeapi:${api}"
-	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
-	//implementation fileTree(dir: 'libs', include: '*.jar')
-}
-
-sponge {
-	apiVersion("${api}")
-	loader {
-		name("java_plain")
-		version("1.0")
+	repositories {
+		mavenCentral()
+		maven {
+			name = "Sponge"
+			url = "https://repo.spongepowered.org/repository/maven-public"
+		}
+		maven {
+			name = "GeyserMC"
+			url = "https://repo.opencollab.dev/main/"
+		}
 	}
-	license("GPL-3.0")
-	plugin("localeapi") {
-		displayName(project.name.capitalize())
-		version("${major}.${minor}.${patch}")
-		entrypoint("${project.group}.LocaleAPI")
-		description("Locale API for Sponge plugins.")
-		contributor("SawFowl") {
-			description("Lead Developer")
-		}
-		links {
-			homepage("https://discord.gg/7xnZGSYJH9")
-			source("https://discord.gg/7xnZGSYJH9")
-			issues("https://discord.gg/7xnZGSYJH9")
-		}
-		dependency("spongeapi") {
-			optional(false)
-			loadOrder("after")
-			version("${api}")
+	tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+		it.options.getRelease().set(21)
+	}
+	configurations {
+		doc {
+			transitive = false
 		}
 	}
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-	archiveClassifier = 'sources'
-	from sourceSets.main.allSource
-	exclude('sawfowl/localeapi/apiclasses/**')
-	exclude('sawfowl/localeapi/ImplementAPI.java')
-	exclude('sawfowl/localeapi/LocaleAPI.java')
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-	archiveClassifier = 'javadoc'
-	from javadoc.destinationDir
-}
-
-artifacts {
-	archives sourcesJar
-	archives javadocJar
-}
-
-configurations {
-	doc {
-		transitive false
-	}
-}
-
-javadoc {
-	options.encoding = 'UTF-8'
-	options.links("https://jd.spongepowered.org/spongeapi/${api}")
-	options.links("https://jd.advntr.dev/api/4.16.0/")
-	source configurations.doc.collect { zipTree(it) }
-	include 'sawfowl/localeapi/api/*.java'
-	include 'sawfowl/localeapi/api/event/*.java'
-	include 'sawfowl/localeapi/api/serializetools/*.java'
-	include 'sawfowl/localeapi/api/serializetools/itemstack/*.java'
-	include 'sawfowl/localeapi/api/placeholders/*.java'
-	options.addStringOption('Xdoclint:none', '-quiet')
-}
+subprojects.each { subproject -> evaluationDependsOn(subproject.path)}

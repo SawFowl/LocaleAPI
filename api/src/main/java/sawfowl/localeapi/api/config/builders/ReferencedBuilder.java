@@ -20,8 +20,6 @@ public interface ReferencedBuilder<T> {
 
 	ReferencedBuilder<T> addSerializers(TypeSerializerCollection collection);
 
-	<C extends T> ReferencedConfig<T> buildWithType(Class<C> type);
-
-	ReferencedConfig<T>  build(T object);
+	ReferencedConfig<T>  build();
 
 }

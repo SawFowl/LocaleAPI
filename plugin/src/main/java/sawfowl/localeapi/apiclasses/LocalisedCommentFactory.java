@@ -6,13 +6,15 @@ import org.spongepowered.configurate.CommentedConfigurationNodeIntermediary;
 import org.spongepowered.configurate.objectmapping.meta.Processor;
 import org.spongepowered.configurate.objectmapping.meta.Processor.Factory;
 
-import sawfowl.localeapi.ImplementAPI;
+import com.google.inject.Inject;
+
 import sawfowl.localeapi.api.LocalisedComment;
 import sawfowl.localeapi.api.services.LocaleService;
 
 public final class LocalisedCommentFactory implements Factory<LocalisedComment, Object> {
 
-	private static final LocaleService LOCALE_SERVICE = ImplementAPI.getLocaleService();
+	@Inject
+	private static LocaleService LOCALE_SERVICE;
 	public static final LocalisedCommentFactory INSTANCE = new LocalisedCommentFactory();
 
 	private LocalisedCommentFactory(){}
@@ -24,7 +26,7 @@ public final class LocalisedCommentFactory implements Factory<LocalisedComment, 
 				if(node.comment() != null && !node.comment().isEmpty()) return;
 				if(data.plugin() == null || data.path() == null || data.path().length == 0) {
 					if(!data.def().isEmpty()) node.comment(data.def());
-				} else if(LOCALE_SERVICE.localesExist(data.plugin()) && !LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).contains((Object[]) data.path())) {
+				} else if(LOCALE_SERVICE.localesExist(data.plugin()) && LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).contains((Object[]) data.path())) {
 					node.comment(LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).getString((Object[]) data.path()));
 				} else if(!data.def().isEmpty()) node.comment(data.def());
 			}

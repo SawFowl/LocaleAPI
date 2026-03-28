@@ -8,18 +8,18 @@ import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.config.Config;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
-public interface SimpleBuilder<C extends Config> {
+public interface SimpleBuilder {
 
-	SimpleBuilder<C> setPath(Path configDir);
+	SimpleBuilder setPath(Path configDir);
 
-	SimpleBuilder<C> setName(String name);
+	SimpleBuilder setName(String name);
 
-	SimpleBuilder<C> setType(ConfigTypes type);
+	SimpleBuilder setType(ConfigTypes type);
 
-	SimpleBuilder<C> setItemStackSerializerType(ItemStackSerializerType type);
+	SimpleBuilder setItemStackSerializerType(ItemStackSerializerType type);
 
-	SimpleBuilder<C> addSerializers(TypeSerializerCollection collection);
+	SimpleBuilder addSerializers(TypeSerializerCollection collection);
 
-	C build();
+	Config build();
 
 }

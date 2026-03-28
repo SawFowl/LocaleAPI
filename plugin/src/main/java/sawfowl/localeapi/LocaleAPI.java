@@ -14,6 +14,7 @@
  */
 package sawfowl.localeapi;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
@@ -21,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.spongepowered.api.ResourceKey;
@@ -45,6 +45,7 @@ import org.spongepowered.api.service.economy.Currency;
 import org.spongepowered.api.service.economy.account.UniqueAccount;
 import org.spongepowered.api.statistic.Statistic;
 import org.spongepowered.api.util.Nameable;
+import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
 import org.spongepowered.math.vector.Vector3d;
@@ -62,18 +63,25 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
 
 import sawfowl.localeapi.ImplementAPI.API;
+import sawfowl.localeapi.api.ConfigTypes;
+import sawfowl.localeapi.api.LocalesList;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.Text;
 import sawfowl.localeapi.api.TextUtils;
+import sawfowl.localeapi.api.config.ReferencedConfig;
+import sawfowl.localeapi.api.config.locale.ReferencedLocale;
 import sawfowl.localeapi.api.placeholders.Placeholder;
 import sawfowl.localeapi.api.placeholders.Placeholders;
 import sawfowl.localeapi.api.placeholders.Placeholders.DefaultPlaceholderKeys;
+import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.services.ConfigurationService;
 import sawfowl.localeapi.api.services.LocaleService;
 import sawfowl.localeapi.api.services.LoggerService;
 import sawfowl.localeapi.apiclasses.TextImpl;
 import sawfowl.localeapi.apiclasses.services.ConfigurationServiceImplement;
 import sawfowl.localeapi.apiclasses.services.LoggerServiceImplement;
+import sawfowl.localeapi.configure.Config;
+import sawfowl.localeapi.configure.LocaleConfig;
 
 @Plugin("localeapi")
 public class LocaleAPI {
@@ -81,16 +89,76 @@ public class LocaleAPI {
 	private static PluginContainer container;
 	private Logger logger;
 	private LocaleService localeService;
+	private LoggerService loggerService;
+	private ConfigurationService configurationService;
 	private boolean isPresentRegistry = false;
+	private static String localeAPIConfigDir;
+	private static String mainConfigDir;
+	private static ReferencedConfig<Config> config;
+	private static LocalesList<LocaleConfig> locales;
 
 	@Inject
 	public LocaleAPI(PluginContainer pluginContainer, @ConfigDir(sharedRoot = false) Path configDirectory) {
 		container = pluginContainer;
+		loggerService = new LoggerServiceImplement();
+		configurationService = new ConfigurationServiceImplement();
 		new InjectorAPI().createInjector();
 		logger = Logger.createApacheLogger("LocaleAPI");
 		localeService = new ImplementAPI().create(logger, configDirectory);
 		if(!configDirectory.toFile().exists()) configDirectory.toFile().mkdir();
 		registerDefaultPlaceholders();
+		localeAPIConfigDir = configDirectory.toFile().getAbsolutePath();
+		mainConfigDir = configDirectory.getParent().toFile().getAbsolutePath();
+		File mainConfig = null;
+		for(File file : configDirectory.toFile().listFiles()) {
+			if(!file.isDirectory() && file.getName().contains("Config")) {
+				mainConfig = file;
+				break;
+			}
+		}
+		locales = localeService.createLocales(pluginContainer, LocaleConfig.class);
+		if(!locales.contains(Locales.DEFAULT)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.DEFAULT, LocaleConfig.class);
+		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
+		if(mainConfig != null) {
+			ConfigTypes type = ConfigTypes.getTypeByExtension(getExtension(mainConfig.getName()));
+			config = ConfigurationService.getInstance()
+				.createReferencedConfig(pluginContainer, Config.class)
+				.setPath(configDirectory)
+				.setName("Config")
+				.setType(type)
+				.setItemStackSerializerType(ItemStackSerializerType.JSON)
+				.build();
+			if(getConfig().getConfigSettings().getType() != type) {
+				config = ConfigurationService.getInstance()
+					.createReferencedConfig(pluginContainer, getConfig())
+					.setPath(configDirectory)
+					.setName("Config")
+					.setType(getConfig().getConfigSettings().getType())
+					.setItemStackSerializerType(ItemStackSerializerType.JSON)
+					.build();
+				mainConfig.delete();
+			}
+		}
+		mainConfig = null;
+		if(config == null) config = ConfigurationService.getInstance()
+				.createReferencedConfig(pluginContainer, Config.class)
+				.setPath(configDirectory)
+				.setName("Config")
+				.setType(ConfigTypes.HOCON)
+				.setItemStackSerializerType(ItemStackSerializerType.JSON)
+				.build();
+		if(getConfig().getLocalesSettings().isForcedUse()) {
+			@SuppressWarnings("unchecked")
+			List<ReferencedLocale<LocaleConfig>> copy = locales.stream().map(locale -> (ReferencedLocale<LocaleConfig>) locale).toList();
+			copy.forEach(localeConfig -> {
+				if(localeConfig.getType() != getConfig().getLocalesSettings().getType()) {
+					locales.remove(localeConfig.getLocale());
+					localeConfig.getPath().toFile().delete();
+					locales.createReferencedTranslation(getConfig().getLocalesSettings().getType(), localeConfig.getLocale(), localeConfig.get());
+				}
+			});
+			copy = null;
+		}
 	}
 
 	@Listener
@@ -101,12 +169,7 @@ public class LocaleAPI {
 
 	@Listener(order = Order.FIRST)
 	public void registerBuilders(RegisterBuilderEvent event) {
-		event.register(Text.Builder.class, new Supplier<Text.Builder>() {
-			@Override
-			public Text.Builder get() {
-				return new TextImpl().builder();
-			}
-		});
+		event.register(Text.Builder.class, () -> new TextImpl().builder());
 	}
 
 	@Listener
@@ -116,6 +179,22 @@ public class LocaleAPI {
 
 	public static PluginContainer getPluginContainer() {
 		return container;
+	}
+
+	public static String getLocaleAPIConfigDir() {
+		return localeAPIConfigDir;
+	}
+
+	public static String getMainConfigDir() {
+		return mainConfigDir;
+	}
+
+	public static Config getConfig() {
+		return config == null ? null : config.get();
+	}
+
+	public static LocalesList<LocaleConfig> getLocales() {
+		return locales;
 	}
 
 	private void registerDefaultPlaceholders() {
@@ -225,6 +304,16 @@ public class LocaleAPI {
 		return player.statistics().keySet().stream().filter(statistic -> (statistic.toString().contains(key.replace(':', '.')))).findFirst();
 	}
 
+	private String getExtension(String fileName) {
+		char ch;
+		int len;
+		if(fileName==null || (len = fileName.length())==0 || (ch = fileName.charAt(len-1))=='/' || ch=='\\' || ch=='.' ) return "";
+		int dotInd = fileName.lastIndexOf('.'),
+			sepInd = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+		if(dotInd <= sepInd) return "";
+		else return fileName.substring(dotInd+1).toLowerCase();
+	}
+
 	final class InjectorAPI extends AbstractModule {
 
 		Injector createInjector() {
@@ -233,9 +322,9 @@ public class LocaleAPI {
 
 		@Override
 		protected void configure() {
-			bind(LoggerService.class).toInstance(new LoggerServiceImplement());
+			bind(LoggerService.class).toInstance(loggerService);
 			this.requestStaticInjection(LoggerService.class);
-			bind(ConfigurationService.class).toInstance(new ConfigurationServiceImplement());
+			bind(ConfigurationService.class).toInstance(configurationService);
 			this.requestStaticInjection(ConfigurationService.class);
 		}
 

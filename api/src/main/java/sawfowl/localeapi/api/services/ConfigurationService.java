@@ -16,7 +16,6 @@ import org.spongepowered.plugin.PluginContainer;
 import com.google.inject.Inject;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.config.Config;
 import sawfowl.localeapi.api.config.builders.ReferencedBuilder;
 import sawfowl.localeapi.api.config.builders.SimpleBuilder;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
@@ -30,9 +29,11 @@ public abstract class ConfigurationService {
 		return INSTANCE;
 	}
 
-	public abstract SimpleBuilder<Config> createSimpleConfig(PluginContainer container);
+	public abstract SimpleBuilder createSimpleConfig(PluginContainer container);
 
-	public abstract <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container);
+	public abstract <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type);
+
+	public abstract <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, T value);
 
 
 	/**

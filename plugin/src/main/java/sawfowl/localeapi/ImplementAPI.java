@@ -26,12 +26,9 @@ import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.LocalesList;
 import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
-import sawfowl.localeapi.api.services.ConfigurationService;
 import sawfowl.localeapi.api.services.LocaleService;
-import sawfowl.localeapi.api.services.LoggerService;
 import sawfowl.localeapi.apiclasses.LocalesListImpl;
-import sawfowl.localeapi.apiclasses.services.ConfigurationServiceImplement;
-import sawfowl.localeapi.apiclasses.services.LoggerServiceImplement;
+import sawfowl.localeapi.apiclasses.LocalisedCommentFactory;
 import sawfowl.localeapi.utils.WatchRunner;
 
 public class ImplementAPI {
@@ -185,12 +182,9 @@ public class ImplementAPI {
 
 		@Override
 		protected void configure() {
-			bind(LoggerService.class).toInstance(new LoggerServiceImplement());
-			this.requestStaticInjection(LoggerService.class);
-			bind(ConfigurationService.class).toInstance(new ConfigurationServiceImplement());
-			this.requestStaticInjection(ConfigurationService.class);
 			bind(LocaleService.class).toInstance(service);
 			this.requestStaticInjection(LocaleService.class);
+			this.requestStaticInjection(LocalisedCommentFactory.class);
 		}
 
 	}

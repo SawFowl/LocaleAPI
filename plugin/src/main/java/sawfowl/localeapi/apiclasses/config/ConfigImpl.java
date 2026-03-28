@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
@@ -159,7 +158,7 @@ public class ConfigImpl implements Config {
 	@Override
 	public void addSerializers(TypeSerializerCollection collection) {
 		try {
-			loader = selectBuilder(type).path(path).defaultOptions(options -> options.serializers(serializers -> serializers.registerAll(loader.defaultOptions().serializers()).registerAll(collection))).build();
+			loader = selectLoader();
 			node = loader.load();
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
@@ -180,7 +179,7 @@ public class ConfigImpl implements Config {
 	@Override
 	public <C extends Config> C load() {
 		try {
-			if(loader == null) loader = selectBuilder(type).path(path).build();
+			if(loader == null) loader = selectLoader();
 			node = loader.load();
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
@@ -199,8 +198,8 @@ public class ConfigImpl implements Config {
 		return (C) this;
 	}
 
-	<B extends AbstractConfigurationLoader.Builder<B, ?>> B selectBuilder(ConfigTypes loaderType) {
-		return ConfigurationServiceImplement.getInstance().selectBuilder(path, loaderType, itemStackSerializerType, serializers);
+	<T, C extends ConfigurationNode> ConfigurationLoader<C> selectLoader() {
+		return ConfigurationServiceImplement.getInstance().createConfigLoader(path, type, itemStackSerializerType, serializers);
 	}
 
 	protected PluginContainer getContainer() {

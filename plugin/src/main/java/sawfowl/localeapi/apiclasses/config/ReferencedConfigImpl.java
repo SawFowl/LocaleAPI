@@ -75,7 +75,7 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	@Override
 	public <C extends Config> C load() {
 		try {
-			configurationReference = (ConfigurationReference<N>) super.selectBuilder(getType()).build().loadToReference();
+			configurationReference = (ConfigurationReference<N>) super.selectLoader().loadToReference();
 			configurationReference.load();
 			valueReference = configurationReference.referenceTo(clazz);
 		} catch (ConfigurateException e) {
@@ -100,7 +100,7 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 	@Override
 	public void addSerializers(TypeSerializerCollection collection) {
 		try {
-			configurationReference = (ConfigurationReference<N>) selectBuilder(getType()).path(getPath()).defaultOptions(options -> options.serializers(serializers -> serializers.registerAll(configurationReference.loader().defaultOptions().serializers()).registerAll(collection))).build().loadToReference();
+			configurationReference = (ConfigurationReference<N>) selectLoader().loadToReference();
 			configurationReference.load();
 			valueReference = configurationReference.referenceTo(clazz);
 		} catch (ConfigurateException e) {

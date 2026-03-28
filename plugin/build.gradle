@@ -13,11 +13,22 @@ dependencies {
 shadowJar {
 	archiveBaseName.set("${rootProject.name}-${rootProject.version}")
 	archiveClassifier.set('')
+	
+	// Исключаем затенение пакета org.spongepowered.configurate
+	exclude 'org/spongepowered/configurate/**'
+	
 	dependencies {
 		exclude(dependency("org.spongepowered:spongeapi:${api}"))
 		include(project(path: ':shading'))
 		include(project(path: ':api'))
 	}
+	
+	// Если нужно оставить какие-то классы из configurate, можно добавить их обратно
+	// from {
+	//     configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	// } {
+	//     include 'org/spongepowered/configurate/serialize/**'
+	// }
 }
 
 sponge {

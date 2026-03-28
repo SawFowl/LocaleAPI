@@ -8,12 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.spongepowered.api.util.locale.Locales;
+import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.plugin.PluginContainer;
 
+import sawfowl.localeapi.LocaleAPI;
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.EnumLocales;
 import sawfowl.localeapi.api.LocalesList;
@@ -23,12 +26,17 @@ import sawfowl.localeapi.api.config.locale.ReferencedLocale;
 import sawfowl.localeapi.api.services.LocaleService;
 import sawfowl.localeapi.apiclasses.config.locale.PluginLocaleImpl;
 import sawfowl.localeapi.apiclasses.config.locale.ReferencedLocaleImpl;
+import sawfowl.localeapi.configure.Config;
 import sawfowl.localeapi.utils.WatchRunner;
 
 public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
 	public static LocalesList<? extends Translation> create(PluginContainer container, Path localesDir, LocaleService localeService) {
 		return new LocalesListImpl<>(container, localesDir, localeService);
+	}
+
+	private static Config getConfig() {
+		return LocaleAPI.getConfig();
 	}
 
 	private Map<Locale, PluginLocale> locales = new HashMap<>();
@@ -56,14 +64,42 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
 	@Override
 	public PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale) {
-		locales.put(locale, PluginLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), locale, this));
+		Objects.requireNonNull(locale);
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
+		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && configType != getConfig().getConfigSettings().getType()) {
+			PluginLocale updated = PluginLocaleImpl.create(container, path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), locale, this);
+			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
+				PluginLocale old = PluginLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), locale, this);
+				try {
+					updated.getLoader().save(old.getRootNode());
+				} catch (ConfigurateException e) {
+					e.printStackTrace();
+				}
+				old.getPath().toFile().delete();
+				old = null;
+			}
+			if(locales.containsKey(locale)) locales.remove(locale);
+			locales.put(locale, updated);
+		} else locales.put(locale, PluginLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), locale, this));
 		return locales.get(locale);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, Class<O> clazz) {
-		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale));
+		Objects.requireNonNull(locale);
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
+		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && configType != getConfig().getConfigSettings().getType()) {
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(container, path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), clazz, locale);
+			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
+				ReferencedLocale<O> old = ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale);
+				updated.save(old.get());
+				old.getPath().toFile().delete();
+				old = null;
+			}
+			if(locales.containsKey(locale)) locales.remove(locale);
+			locales.put(locale, updated);
+		} else locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale));
 		if(reference == null) reference = (Class<T>) clazz;
 		return (ReferencedLocale<O>) locales.get(locale);
 	}
@@ -71,7 +107,19 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <O extends T> ReferencedLocale<O> createReferencedTranslation(ConfigTypes configType, Locale locale, O object) {
-		locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale));
+		Objects.requireNonNull(locale);
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
+		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && configType != getConfig().getConfigSettings().getType()) {
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(container, path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), object, locale);
+			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
+				ReferencedLocale<O> old = ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale);
+				updated.save(old.get());
+				old.getPath().toFile().delete();
+				old = null;
+			}
+			if(locales.containsKey(locale)) locales.remove(locale);
+			locales.put(locale, updated);
+		} else locales.put(locale, ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale));
 		if(reference == null) reference = (Class<T>) object.getClass();
 		return (ReferencedLocale<O>) locales.get(locale);
 	}

@@ -11,7 +11,6 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
-import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.objectmapping.ObjectMapper;
 import org.spongepowered.configurate.objectmapping.meta.NodeResolver;
@@ -26,14 +25,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import net.kyori.adventure.serializer.configurate4.ConfigurateComponentSerializer;
+
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocalisedComment;
-import sawfowl.localeapi.api.config.Config;
 import sawfowl.localeapi.api.config.builders.ReferencedBuilder;
 import sawfowl.localeapi.api.config.builders.SimpleBuilder;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.services.ConfigurationService;
 import sawfowl.localeapi.apiclasses.LocalisedCommentFactory;
+import sawfowl.localeapi.apiclasses.config.builders.ReferencedBuilderImpl;
+import sawfowl.localeapi.apiclasses.config.builders.SimpleBuilderImpl;
 import sawfowl.localeapi.apiclasses.serializers.ConfigTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.LAEnumItemStackTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.itemstack.ItemStackSerializer;
@@ -59,71 +60,45 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	private final TypeSerializerCollection SIMPLE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).register(ItemStack.class, PlainItemStackSerializer.INSTANCE).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
 	private final TypeSerializerCollection JSON_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).register(ItemStack.class, ItemStackSerializer.INSTANCE).register(BlockState.class, Sponge.game().configManager().serializers().get(BlockState.class)).registerAll(TypeSerializerCollection.defaults()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
 	private final TypeSerializerCollection SPONGE_SERIALIZER_COLLECTION_VARIANT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).register(ItemStackSerializerType.class, LAEnumItemStackTypeSerializer.INSTANCE).register(ConfigTypes.class, ConfigTypeSerializer.INSTANCE).registerAll(Sponge.game().configManager().serializers()).registerAll(ConfigurateComponentSerializer.configurate().serializers()).registerAll(JSON_SERIALIZERS).build();
+	private final TypeSerializerCollection DEFAULT = TypeSerializerCollection.defaults().childBuilder().registerAnnotatedObjects(FACTORY).build();
 	private final ConfigurationOptions SIMPLE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SIMPLE_SERIALIZER_COLLECTION_VARIANT);
 	private final ConfigurationOptions JSON_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(JSON_SERIALIZER_COLLECTION_VARIANT);
 	private final ConfigurationOptions SPONGE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SPONGE_SERIALIZER_COLLECTION_VARIANT);
 
-	/**
-	 * Creating a YAML config with serializers applied and standard options preserved.
-	 */
-	public YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType) {
-		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(selectSerializersCollection(serializerType))).nodeStyle(NodeStyle.BLOCK);
+	public libs.geysermc.yaml.YamlConfigurationLoader.Builder createGeyserYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
+		return libs.geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(libs.geysermc.yaml.NodeStyle.BLOCK);
 	}
 
-	/**
-	 * Creating a YAML config with serializers applied and standard options preserved.
-	 */
-	public libs.geysermc.yaml.YamlConfigurationLoader.Builder createGeyserYamlConfigurationLoader(ItemStackSerializerType serializerType) {
-		return libs.geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(selectSerializersCollection(serializerType))).nodeStyle(libs.geysermc.yaml.NodeStyle.BLOCK);
-	}
-
-	/**
-	 * Creating a HOCON config with serializers applied and standard options preserved.
-	 */
-	public HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType) {
-		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(selectSerializersCollection(serializerType)));
-	}
-
-	/**
-	 * Creating a JSON config with serializers applied and standard options preserved.
-	 */
-	public GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType) {
-		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(selectSerializersCollection(serializerType)));
-	}
-
-	/**
-	 * Creating a YAML config with serializers applied and standard options preserved.
-	 */
 	public YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
+		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
 	}
 
-	/**
-	 * Creating a HOCON config with serializers applied and standard options preserved.
-	 */
 	public HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
-	/**
-	 * Creating a JSON config with serializers applied and standard options preserved.
-	 */
 	public GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
+	@Override
 	public ConfigurationNode createVirtualNode(ItemStackSerializerType serializerType) {
 		return BasicConfigurationNode.root(o -> o.options().serializers(selectSerializersCollection(serializerType)));
 	}
 
 	@Override
-	public SimpleBuilder<Config> createSimpleConfig(PluginContainer container) {
-		return null;
+	public SimpleBuilder createSimpleConfig(PluginContainer container) {
+		return new SimpleBuilderImpl(container);
 	}
 
 	@Override
-	public <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container) {
-		return null;
+	public <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type) {
+		return new ReferencedBuilderImpl<T>(container, type);
+	}
+
+	@Override
+	public <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, T value) {
+		return new ReferencedBuilderImpl<T>(container, value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -132,20 +107,20 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 		switch (configType) {
 			case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case GEYSER_YAML: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case GEYSER_YAML: return (ConfigurationLoader<C>) createGeyserYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + configType);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public <B extends AbstractConfigurationLoader.Builder<B, ?>> B selectBuilder(Path path, ConfigTypes loaderType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection serializers) {
+	public <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Path path, ConfigTypes loaderType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		switch (loaderType) {
-			case YAML: return (B) createYamlConfigurationLoader(serializerType, serializers).path(path);
-			//case XML: return (B) XmlConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).writesExplicitType(true);
-			case JSON: return (B) createJsonConfigurationLoader(serializerType, serializers).path(path);
-			//case JACKSON: return (B) JacksonConfigurationLoader.builder().defaultOptions(ConfigOptions.OPTIONS).fieldValueSeparatorStyle(FieldValueSeparatorStyle.SPACE_BOTH_SIDES);
-			default: return (B) createHoconConfigurationLoader(serializerType, serializers).path(path);
+			case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case GEYSER_YAML: return (ConfigurationLoader<C>) createGeyserYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
 		}
 	}
 

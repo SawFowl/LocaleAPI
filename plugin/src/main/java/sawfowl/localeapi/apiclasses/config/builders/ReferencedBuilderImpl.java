@@ -3,6 +3,7 @@ package sawfowl.localeapi.apiclasses.config.builders;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.plugin.PluginContainer;
 
@@ -76,12 +77,17 @@ public class ReferencedBuilderImpl<T> implements ReferencedBuilder<T> {
 	public ReferencedConfig<T> build() {
 		Objects.requireNonNull(configDir);
 		Objects.requireNonNull(name);
-		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && type != LocaleAPI.getConfig().getConfigSettings().getType()) {
+		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && !type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) {
 			if(value == null) {
 				ReferencedConfig<T> updated = ReferencedConfigImpl.create(container, configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, clazz);
 				if(configDir.resolve(name + type.toString()).toFile().exists()) {
 					ReferencedConfig<T> old = ReferencedConfigImpl.create(container, configDir, name, type, itemStackSerializerType, collection, clazz);
 					updated.save(old.get());
+					try {
+						updated.getLoader().save(old.getRootNode());
+					} catch (ConfigurateException e) {
+						e.printStackTrace();
+					}
 					old.getPath().toFile().delete();
 					old = null;
 				}
@@ -91,6 +97,11 @@ public class ReferencedBuilderImpl<T> implements ReferencedBuilder<T> {
 				if(configDir.resolve(name + type.toString()).toFile().exists()) {
 					ReferencedConfig<T> old = ReferencedConfigImpl.create(container, configDir, name, type, itemStackSerializerType, collection, value);
 					updated.save(old.get());
+					try {
+						updated.getLoader().save(old.getRootNode());
+					} catch (ConfigurateException e) {
+						e.printStackTrace();
+					}
 					old.getPath().toFile().delete();
 					old = null;
 				}

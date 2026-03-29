@@ -63,7 +63,7 @@ public class ImplementAPI {
 			stackSerializers = new HashMap<String, ItemStackSerializerType>();
 			defaultReferences = new HashMap<String, Class<? extends Translation>>();
 			locales = EnumLocales.getLocales();
-			WatchRunner.createInstance(this, logger, path);
+			WatchRunner.createInstance(this, logger);
 			watchThread = WatchRunner.getInstance();
 			allowSystem = locales.contains(system) || locales.stream().filter(locale -> (locale.toLanguageTag().equals(system.toLanguageTag()))).findFirst().isPresent();
 			Sponge.eventManager().registerListeners(LocaleAPI.getPluginContainer(), this, MethodHandles.lookup());
@@ -124,8 +124,10 @@ public class ImplementAPI {
 		@Override
 		public <T extends Translation> LocalesList<T> createLocales(PluginContainer container) {
 			if(pluginLocales.containsKey(container.metadata().id())) return getLocales(container);
-			pluginLocales.put(container.metadata().id(), LocalesListImpl.create(container, configDirectory, this));
-			WatchRunner.initPlugin(container);
+			LocalesListImpl<?> list = LocalesListImpl.create(container, configDirectory, this);
+			pluginLocales.put(container.metadata().id(), list);
+			WatchRunner.initPlugin(container, list.getPath());
+			list = null;
 			return getLocales(container);
 		}
 

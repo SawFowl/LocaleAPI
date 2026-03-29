@@ -48,6 +48,8 @@ import org.spongepowered.api.util.Nameable;
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.api.world.server.ServerLocation;
 import org.spongepowered.api.world.server.ServerWorld;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.math.vector.Vector3d;
 import org.spongepowered.math.vector.Vector3i;
 import org.spongepowered.plugin.PluginContainer;
@@ -116,9 +118,6 @@ public class LocaleAPI {
 				break;
 			}
 		}
-		locales = localeService.createLocales(pluginContainer, LocaleConfig.class);
-		if(!locales.contains(Locales.DEFAULT)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.DEFAULT, LocaleConfig.class);
-		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
 		if(mainConfig != null) {
 			ConfigTypes type = ConfigTypes.getTypeByExtension(getExtension(mainConfig.getName()));
 			config = ConfigurationService.getInstance()
@@ -128,7 +127,8 @@ public class LocaleAPI {
 				.setType(type)
 				.setItemStackSerializerType(ItemStackSerializerType.JSON)
 				.build();
-			if(getConfig().getConfigSettings().getType() != type) {
+			if(!type.comparableType(getConfig().getConfigSettings().getType())) {
+				ConfigurationNode node = config.getRootNode();
 				config = ConfigurationService.getInstance()
 					.createReferencedConfig(pluginContainer, getConfig())
 					.setPath(configDirectory)
@@ -136,10 +136,19 @@ public class LocaleAPI {
 					.setType(getConfig().getConfigSettings().getType())
 					.setItemStackSerializerType(ItemStackSerializerType.JSON)
 					.build();
+				try {
+					config.getLoader().save(node);
+				} catch (ConfigurateException e) {
+					e.printStackTrace();
+				}
 				mainConfig.delete();
+				node = null;
 			}
 		}
 		mainConfig = null;
+		locales = localeService.createLocales(pluginContainer, LocaleConfig.class);
+		if(!locales.contains(Locales.DEFAULT)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.DEFAULT, LocaleConfig.class);
+		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
 		if(config == null) config = ConfigurationService.getInstance()
 				.createReferencedConfig(pluginContainer, Config.class)
 				.setPath(configDirectory)
@@ -151,10 +160,14 @@ public class LocaleAPI {
 			@SuppressWarnings("unchecked")
 			List<ReferencedLocale<LocaleConfig>> copy = locales.stream().map(locale -> (ReferencedLocale<LocaleConfig>) locale).toList();
 			copy.forEach(localeConfig -> {
-				if(localeConfig.getType() != getConfig().getLocalesSettings().getType()) {
+				if(!localeConfig.getType().comparableType(getConfig().getLocalesSettings().getType())) {
 					locales.remove(localeConfig.getLocale());
 					localeConfig.getPath().toFile().delete();
-					locales.createReferencedTranslation(getConfig().getLocalesSettings().getType(), localeConfig.getLocale(), localeConfig.get());
+					try {
+						locales.createReferencedTranslation(getConfig().getLocalesSettings().getType(), localeConfig.getLocale(), localeConfig.get()).getLoader().save(localeConfig.getRootNode());
+					} catch (ConfigurateException e) {
+						e.printStackTrace();
+					}
 				}
 			});
 			copy = null;

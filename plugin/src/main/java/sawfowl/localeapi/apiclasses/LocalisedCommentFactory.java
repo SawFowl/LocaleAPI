@@ -27,7 +27,7 @@ public final class LocalisedCommentFactory implements Factory<LocalisedComment, 
 				if(data.plugin() == null || data.path() == null || data.path().length == 0) {
 					if(!data.def().isEmpty()) node.comment(data.def());
 				} else if(LOCALE_SERVICE.localesExist(data.plugin()) && LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).contains((Object[]) data.path())) {
-					node.comment(LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).getString((Object[]) data.path()));
+					if(node.comment() == null || node.comment().isEmpty()) node.comment(LOCALE_SERVICE.getLocales(data.plugin()).getSimple(LOCALE_SERVICE.getSystemOrDefaultLocale()).getString((Object[]) data.path()));
 				} else if(!data.def().isEmpty()) node.comment(data.def());
 			}
 		};

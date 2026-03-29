@@ -62,7 +62,7 @@ public class SimpleBuilderImpl implements SimpleBuilder {
 	public Config build() {
 		Objects.requireNonNull(configDir);
 		Objects.requireNonNull(name);
-		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && type != LocaleAPI.getConfig().getConfigSettings().getType()) {
+		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && !type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) {
 			Config updated = ConfigImpl.create(container, configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection);
 			if(configDir.resolve(name + type.toString()).toFile().exists()) {
 				Config old = ConfigImpl.create(container, configDir, name, type, itemStackSerializerType, collection);
@@ -72,6 +72,7 @@ public class SimpleBuilderImpl implements SimpleBuilder {
 					e.printStackTrace();
 				}
 				old.getPath().toFile().delete();
+				old = null;
 			}
 			return updated;
 		} else Objects.requireNonNull(type);

@@ -30,6 +30,7 @@ import sawfowl.localeapi.api.Logger;
 import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.event.LocaleEvent;
 import sawfowl.localeapi.api.services.LocaleService;
+import sawfowl.localeapi.configure.localization.LoggerMessages;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -44,13 +45,11 @@ class Watcher {
 	private Set<UpdateInfo> updateInfo = new HashSet<>();
 	private LocaleService localeService;
 	private Logger logger;
-	private Path configDirectory;
 	private Cause cause;
 	private PluginContainer pluginContainer;
-	Watcher(LocaleService localeService, Logger logger, Path path) {
+	Watcher(LocaleService localeService, Logger logger) {
 		this.localeService = localeService;
 		this.logger = logger;
-		configDirectory = path;
 		pluginContainer = LocaleAPI.getPluginContainer();
 		cause = Cause.of(EventContext.builder().add(EventContextKeys.PLUGIN, pluginContainer).build(), pluginContainer);
 		try {
@@ -64,9 +63,8 @@ class Watcher {
 		freeze = false;
 	}
 
-	void register(PluginContainer container) {
+	void register(PluginContainer container, Path localesDir) {
 		if(!registered.contains(container.metadata().id())) try {
-			Path localesDir = configDirectory.resolve(container.metadata().id());
 			if(!localesDir.toFile().exists()) localesDir.toFile().mkdir();
 			localesDir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
 			registered.add(container.metadata().id());
@@ -118,7 +116,7 @@ class Watcher {
 		} if(event.kind() == ENTRY_DELETE && locale != Locales.DEFAULT) Sponge.asyncScheduler().submit(Task.builder().delay(200, TimeUnit.MILLISECONDS).plugin(LocaleAPI.getPluginContainer()).execute(() -> {
 			if(path.resolve(fileName).toFile().exists()) return;
 			localeService.getLocales(container).remove(locale);
-			logger.info("[FileWatcher] The \"" + locale.toLanguageTag() + "\" localization for the \"" + container.metadata().id() + "\" has been removed!");
+			logger.info("[FileWatcher] " + getMessages().getRemove(locale, container));
 			Sponge.eventManager().post(new LocaleEvent.Delete() {
 
 				@Override
@@ -150,7 +148,7 @@ class Watcher {
 	}
 
 	private void create(PluginContainer container, Locale locale, ConfigTypes type, long time) {
-		logger.info("[FileWatcher] Added a new localization file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\"! Loading...");
+		logger.info("[FileWatcher] " + getMessages().getAdd(locale, type, container));
 		PluginLocale pluginLocale = localeService.getDefaultReference(container) == null
 			?
 			localeService.getLocales(container).createSimpleTranslation(type, locale)
@@ -194,7 +192,7 @@ class Watcher {
 			PluginLocale pluginLocale = localeService.getLocales(container).getSimple(locale);
 			pluginLocale.load();
 			this.updateInfo.add(new UpdateInfo(System.currentTimeMillis(), locale, container));
-			logger.info("[FileWatcher] Locale file \"" + locale.toLanguageTag() + type.toString() + "\" for plugin \"" + container.metadata().id() + "\" has been changed! Reloading...");
+			logger.info("[FileWatcher] " + getMessages().getReload(locale, type, container));
 			Sponge.eventManager().post(new LocaleEvent.Reload() {
 
 				@Override
@@ -235,6 +233,10 @@ class Watcher {
 
 	private boolean existTag(String locale) {
 		return Stream.of(EnumLocales.values()).filter(value -> value.getTag().equals(locale)).findFirst().isPresent();
+	}
+
+	private LoggerMessages getMessages() {
+		return LocaleAPI.getLocales().getSystemAsReferenced().getLoggerMessages();
 	}
 
 	private class UpdateInfo {

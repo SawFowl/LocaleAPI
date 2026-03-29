@@ -32,6 +32,24 @@ public enum ConfigTypes {
 			return "Json";
 		}
 	},
+	GEYSER_YAML(".yml") {
+		@Override
+		public String toString() {
+			return ".yml";
+		}
+		@Override
+		public String getExtension() {
+			return "yml";
+		}
+		@Override
+		public String getTypeName() {
+			return "GeyserYaml";
+		}
+		@Override
+		public boolean comparableType(ConfigTypes other) {
+			return other == this || other == YAML;
+		}
+	},
 	YAML(".yml") {
 		@Override
 		public String toString() {
@@ -45,19 +63,9 @@ public enum ConfigTypes {
 		public String getTypeName() {
 			return "Yaml";
 		}
-	},
-	GEYSER_YAML(".yml") {
 		@Override
-		public String toString() {
-			return ".yml";
-		}
-		@Override
-		public String getExtension() {
-			return "yml";
-		}
-		@Override
-		public String getTypeName() {
-			return "GeyserYaml";
+		public boolean comparableType(ConfigTypes other) {
+			return other == this || other == GEYSER_YAML;
 		}
 	},
 	/**PROPERTIES(".properties") {
@@ -74,7 +82,9 @@ public enum ConfigTypes {
 		@Override
 		public String getTypeName() {
 			return "UNKNOWN";
-		}};
+		}
+
+	};
 
 	ConfigTypes(String string) {}
 
@@ -83,6 +93,10 @@ public enum ConfigTypes {
 	}
 
 	public abstract String getTypeName();
+
+	public boolean comparableType(ConfigTypes other) {
+		return other == this;
+	}
 
 	public static ConfigTypes find(String type) {
 		return Stream.of(ConfigTypes.values()).filter(value -> value.getTypeName().equalsIgnoreCase(type) || value.toString().equals(type)).findFirst().orElse(UNKNOWN);

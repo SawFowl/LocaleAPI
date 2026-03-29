@@ -84,6 +84,7 @@ import sawfowl.localeapi.apiclasses.services.ConfigurationServiceImplement;
 import sawfowl.localeapi.apiclasses.services.LoggerServiceImplement;
 import sawfowl.localeapi.configure.Config;
 import sawfowl.localeapi.configure.LocaleConfig;
+import sawfowl.localeapi.utils.WatchRunner;
 
 @Plugin("localeapi")
 public class LocaleAPI {
@@ -149,6 +150,7 @@ public class LocaleAPI {
 		locales = localeService.createLocales(pluginContainer, LocaleConfig.class);
 		if(!locales.contains(Locales.DEFAULT)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.DEFAULT, LocaleConfig.class);
 		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
+		((API) localeService).startWatch();
 		if(config == null) config = ConfigurationService.getInstance()
 				.createReferencedConfig(pluginContainer, Config.class)
 				.setPath(configDirectory)
@@ -159,6 +161,7 @@ public class LocaleAPI {
 		if(getConfig().getLocalesSettings().isForcedUse()) {
 			@SuppressWarnings("unchecked")
 			List<ReferencedLocale<LocaleConfig>> copy = locales.stream().map(locale -> (ReferencedLocale<LocaleConfig>) locale).toList();
+			WatchRunner.pause();
 			copy.forEach(localeConfig -> {
 				if(!localeConfig.getType().comparableType(getConfig().getLocalesSettings().getType())) {
 					locales.remove(localeConfig.getLocale());
@@ -170,6 +173,7 @@ public class LocaleAPI {
 					}
 				}
 			});
+			WatchRunner.pause();
 			copy = null;
 		}
 	}
@@ -177,7 +181,6 @@ public class LocaleAPI {
 	@Listener
 	public void onStarted(StartedEngineEvent<Server> event) {
 		isPresentRegistry  = RegistryTypes.CURRENCY.find().isPresent();
-		((API) localeService).startWatch();
 	}
 
 	@Listener(order = Order.FIRST)

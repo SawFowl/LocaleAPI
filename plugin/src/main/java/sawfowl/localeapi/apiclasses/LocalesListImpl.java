@@ -49,11 +49,16 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 		this.container = container;
 		if(getConfig() != null) {
 			if(getConfig().getLocalesSettings().getPath().contains("{LOCALEAPI_PATH}")) {
-				path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir() + File.separator + container.metadata().id()).replace("{PATH_SEPARATOR}", File.separator));
+				if(getConfig().getLocalesSettings().getPath().contains("{PATH_SEPARATOR}")) {
+					if(getConfig().getLocalesSettings().getPath().endsWith("{PATH_SEPARATOR}")) {
+						path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + container.metadata().id());
+					} else path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + File.separator + container.metadata().id());
+				} else path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir() + File.separator + container.metadata().id()));
 			} else if(getConfig().getLocalesSettings().getPath().contains("{PLUGIN_CONFIG_PATH}")) {
 				path = Path.of(getConfig().getLocalesSettings().getPath().replace("{PLUGIN_CONFIG_PATH}", LocaleAPI.getMainConfigDir() + File.separator + container.metadata().id()).replace("{PATH_SEPARATOR}", File.separator));
 			} else path = configDirectory.resolve(container.metadata().id());
 		} else path = configDirectory.resolve(container.metadata().id());
+		createFolders(path, path.toFile());
 		this.localeService = localeService;
 		if(path.toFile().exists() && path.toFile().isDirectory()) for(File file : path.toFile().listFiles()) {
 			if(file.getName().startsWith(DOT) || !file.getName().contains(DOT) || file.getName().endsWith(DOT)) continue;
@@ -77,12 +82,14 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
 				PluginLocale old = PluginLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), locale, this);
 				try {
+					WatchRunner.pause();
 					updated.getLoader().save(old.getRootNode());
+					old.getPath().toFile().delete();
+					old = null;
+					WatchRunner.pause();
 				} catch (ConfigurateException e) {
 					e.printStackTrace();
 				}
-				old.getPath().toFile().delete();
-				old = null;
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
 			locales.put(locale, updated);
@@ -103,12 +110,14 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				ReferencedLocale<O> old = ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), clazz, locale);
 				updated.save(old.get());
 				try {
+					WatchRunner.pause();
 					updated.getLoader().save(old.getRootNode());
+					old.getPath().toFile().delete();
+					old = null;
+					WatchRunner.pause();
 				} catch (ConfigurateException e) {
 					e.printStackTrace();
 				}
-				old.getPath().toFile().delete();
-				old = null;
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
 			locales.put(locale, updated);
@@ -130,12 +139,14 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				ReferencedLocale<O> old = ReferencedLocaleImpl.create(container, path, configType, localeService.getItemStackSerializer(container), object, locale);
 				updated.save(old.get());
 				try {
+					WatchRunner.pause();
 					updated.getLoader().save(old.getRootNode());
+					old.getPath().toFile().delete();
+					old = null;
+					WatchRunner.pause();
 				} catch (ConfigurateException e) {
 					e.printStackTrace();
 				}
-				old.getPath().toFile().delete();
-				old = null;
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
 			locales.put(locale, updated);
@@ -223,6 +234,13 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 
 	private String getPluginID() {
 		return container.metadata().id();
+	}
+
+	private void createFolders(Path path, File file) {
+		if(!file.exists() && path.getParent() != null) {
+			createFolders(path.getParent(), path.toFile());
+			file.mkdir();
+		}
 	}
 
 	private String[] split(String string, char ch) {

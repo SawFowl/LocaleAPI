@@ -59,6 +59,10 @@ class Watcher {
 		};
 	}
 
+	void pause() {
+		freeze = !freeze;
+	}
+
 	void enable() {
 		freeze = false;
 	}
@@ -75,7 +79,15 @@ class Watcher {
 	}
 
 	void startWatch() {
-		if(freeze) return;
+		
+		if(freeze) {
+			try {
+				watchService.take().reset();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		if(!updateInfo.isEmpty()) updateInfo.removeIf(info -> System.currentTimeMillis() - info.time > 1000);
 		try {
 			while(isResetKey(watchService.take()));
@@ -149,6 +161,7 @@ class Watcher {
 
 	private void create(PluginContainer container, Locale locale, ConfigTypes type, long time) {
 		logger.info("[FileWatcher] " + getMessages().getAdd(locale, type, container));
+		this.updateInfo.add(new UpdateInfo(time, locale, container));
 		PluginLocale pluginLocale = localeService.getDefaultReference(container) == null
 			?
 			localeService.getLocales(container).createSimpleTranslation(type, locale)
@@ -182,7 +195,6 @@ class Watcher {
 			}
 
 		});
-		this.updateInfo.add(new UpdateInfo(time, locale, container));
 	}
 
 	private void onModify(PluginContainer container, Locale locale, ConfigTypes type) {
@@ -262,6 +274,5 @@ class Watcher {
 		}
 
 	}
-
 
 }

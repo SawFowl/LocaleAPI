@@ -1,5 +1,4 @@
 dependencies {
-	implementation project(":shading")
 	implementation "org.spongepowered:spongeapi:${api}"
 	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
 }

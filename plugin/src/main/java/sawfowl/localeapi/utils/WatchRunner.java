@@ -12,8 +12,8 @@ import sawfowl.localeapi.api.services.LocaleService;
 public class WatchRunner {
 
 	private static WatchRunner instance;
-	private boolean work = false;
-	private final Watcher watcher;
+	private static boolean work = false;
+	private static Watcher watcher;
 	private boolean started = false;
 	private static Logger logger;
 	private WatchRunner(LocaleService localeService, Logger logger) {
@@ -30,7 +30,7 @@ public class WatchRunner {
 	}
 
 	public static void initPlugin(PluginContainer container, Path localesPath) {
-		getInstance().watcher.register(container, localesPath);
+		watcher.register(container, localesPath);
 	}
 
 	public void enable() {
@@ -60,5 +60,9 @@ public class WatchRunner {
 		return logger;
 	}
 
+	public static void pause() {
+		work = !work;
+		watcher.pause();
+	}
 
 }

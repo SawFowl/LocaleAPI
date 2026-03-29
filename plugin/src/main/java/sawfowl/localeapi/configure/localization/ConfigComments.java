@@ -20,7 +20,7 @@ public class ConfigComments {
 				+ "{LOCALEAPI_PATH} - Указывает на каталог конфигурации плагина LocaleAPI.\n"
 				+ "{PLUGIN_CONFIG_PATH} - Указывает на каталог плагина, который регистрирует локализации.\n"
 				+ "{PATH_SEPARATOR} - Символ разделяющий каталоги.\n"
-				+ "Пример: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales";
+				+ "Пример: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales{PATH_SEPARATOR}";
 		return comments;
 	}
 
@@ -41,7 +41,7 @@ public class ConfigComments {
 			+ "{LOCALEAPI_PATH} - Specifies the configuration directory for the LocaleAPI plugin.\n"
 			+ "{PLUGIN_CONFIG_PATH} - Specifies the plugin directory that registers localizations.\n"
 			+ "{PATH_SEPARATOR} - Directory separator symbol.\n"
-			+ "Example: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales";
+			+ "Example: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales{PATH_SEPARATOR}";
 
 	public String getConfigType() {
 		return configType;

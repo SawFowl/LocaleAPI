@@ -8,7 +8,7 @@ dependencies {
 
 shadowJar {
 	// Исключаем ConfigurationLoader из релокации
-	relocate('org.spongepowered.configurate', 'libs.geysermc') {
+	relocate('org.spongepowered.configurate', 'geysermc') {
 		include 'org.spongepowered.configurate.CommentedConfigurationNode.class'
 		// Исключаем ConfigurationLoader и связанные с ним классы
 		exclude 'org.spongepowered.configurate.ConfigurationLoader.class'
@@ -16,12 +16,12 @@ shadowJar {
 	}
 	
 	// Релоцируем yaml пакет, но исключаем ConfigurationLoader
-	relocate('org.spongepowered.configurate.yaml', 'libs.geysermc.yaml') {
+	relocate('org.spongepowered.configurate.yaml', 'geysermc.yaml') {
 		include 'org.spongepowered.configurate.yaml.**'
 	}
 	
 	// Релоцируем loader пакет, но исключаем ConfigurationLoader
-	relocate('org.spongepowered.configurate.loader', 'libs.geysermc.loader') {
+	relocate('org.spongepowered.configurate.loader', 'geysermc.loader') {
 		include 'org.spongepowered.configurate.loader.**'
 		// Исключаем ConfigurationLoader из этого пакета (если он там есть)
 		exclude 'org.spongepowered.configurate.loader.ConfigurationLoader.class'

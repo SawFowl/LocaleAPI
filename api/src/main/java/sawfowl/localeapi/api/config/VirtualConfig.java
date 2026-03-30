@@ -17,7 +17,7 @@ import sawfowl.localeapi.api.ConfigTypes;
 public interface VirtualConfig {
 
 	/**
-	 * @return The path to the configuration file.
+	 * @return The method returns raw data, either the original data entered when the configuration was created, or new data after the configuration was modified and saved.
 	 */
 	String getRawData();
 

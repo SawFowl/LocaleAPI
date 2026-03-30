@@ -17,8 +17,6 @@ public class ConfigSettings {
 	@Setting("ForcedUse")
 	@LocalisedComment(plugin = "localeapi", path = {"ConfigComments", "ForcedUse"})
 	private boolean forcedUse = false;
-	//@Setting("OverwriteСcomments")
-	//private boolean overwriteСcomments = false;
 
 	public ConfigTypes getType() {
 		return type;

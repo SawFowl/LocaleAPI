@@ -122,7 +122,7 @@ public class LocaleAPI {
 		if(mainConfig != null) {
 			ConfigTypes type = ConfigTypes.getTypeByExtension(getExtension(mainConfig.getName()));
 			config = ConfigurationService.getInstance()
-				.createReferencedConfig(pluginContainer, Config.class)
+				.createReferencedConfig(Config.class)
 				.setPath(configDirectory)
 				.setName("Config")
 				.setType(type)
@@ -131,7 +131,7 @@ public class LocaleAPI {
 			if(!type.comparableType(getConfig().getConfigSettings().getType())) {
 				ConfigurationNode node = config.getRootNode();
 				config = ConfigurationService.getInstance()
-					.createReferencedConfig(pluginContainer, getConfig())
+					.createReferencedConfig(getConfig())
 					.setPath(configDirectory)
 					.setName("Config")
 					.setType(getConfig().getConfigSettings().getType())
@@ -152,7 +152,7 @@ public class LocaleAPI {
 		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
 		((API) localeService).startWatch();
 		if(config == null) config = ConfigurationService.getInstance()
-				.createReferencedConfig(pluginContainer, Config.class)
+				.createReferencedConfig(Config.class)
 				.setPath(configDirectory)
 				.setName("Config")
 				.setType(ConfigTypes.HOCON)

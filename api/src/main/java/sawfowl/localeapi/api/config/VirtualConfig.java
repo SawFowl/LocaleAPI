@@ -1,6 +1,5 @@
 package sawfowl.localeapi.api.config;
 
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,36 +9,17 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
-import org.spongepowered.plugin.PluginContainer;
 
 import io.leangen.geantyref.TypeToken;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
-import sawfowl.localeapi.api.services.ConfigurationService;
 
-public interface Config {
-
-	/**
-	 * Creating a configuration for your plugin.
-	 * @deprecated use {@link ConfigurationService}
-	 * 
-	 * @param plugin - The PluginContainer of your plugin.
-	 * @param configDir - The configuration directory of your plugin.
-	 * @param name - The name of your configuration file. You don't need to specify the type here.
-	 * @param configType - The type of your configuration file.
-	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
-	 * @return
-	 */
-	@Deprecated
-	static Config create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers) {
-		return ConfigurationService.getInstance().createSimpleConfig().setPath(configDir).setName(name).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
-	}
+public interface VirtualConfig {
 
 	/**
 	 * @return The path to the configuration file.
 	 */
-	Path getPath();
+	String getRawData();
 
 	/**
 	 * The type of the configuration file.
@@ -59,18 +39,18 @@ public interface Config {
 	/**
 	 * Converting the configuration so that it is possible to work with a serializable class.
 	 */
-	<T, O extends ReferencedConfig<T>> O toReference(T config);
+	<T, O extends ReferencedVirtualConfig<T>> O toReference(T config);
 
 	/**
 	 * Converting the configuration so that it is possible to work with a serializable class.
 	 */
-	<T, O extends ReferencedConfig<T>> O toReference(Class<T> config);
+	<T, O extends ReferencedVirtualConfig<T>> O toReference(Class<T> config);
 
 	/**
 	 * Converting the configuration so that it is possible to work with a serializable class.<br>
 	 * This method can return `null` if no other method has been used before with passing an object of the serializable class or specifying one.
 	 */
-	@Nullable <T, O extends ReferencedConfig<T>> O toReference();
+	@Nullable <T, O extends ReferencedVirtualConfig<T>> O toReference();
 
 	/**
 	 * Adding an object to the current configuration if the specified configuration section does not exist.
@@ -99,11 +79,6 @@ public interface Config {
 	void addSerializers(TypeSerializerCollection collection);
 
 	/**
-	 * Checking for the existence of a localization file on disk.
-	 */
-	boolean fileExist();
-
-	/**
 	 * Checking whether this configuration can be transformed in such a way that it is possible to work with a serializable class.
 	 */
 	boolean hasReferenced();
@@ -111,12 +86,12 @@ public interface Config {
 	/**
 	 * This method can be used to reload the configuration file.
 	 */
-	<C extends Config> C load();
+	<C extends VirtualConfig> C load();
 
 	/**
 	 * Saving the configuration.
 	 */
-	<C extends Config> C save();
+	<C extends VirtualConfig> C save();
 
 	/**
 	 * Checking for the existence of a section in the configuration.

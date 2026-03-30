@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.Locale;
 
 import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.Translation;
@@ -14,22 +13,22 @@ import sawfowl.localeapi.apiclasses.config.ReferencedConfigImpl;
 
 public class ReferencedLocaleImpl<T extends Translation> extends ReferencedConfigImpl<T, ConfigurationNode> implements ReferencedLocale<T> {
 
-	public static final <T extends Translation> ReferencedLocaleImpl<T> create(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz, Locale locale) {
-		return new ReferencedLocaleImpl<T>(plugin, configDir, configType, itemStackSerializerType, clazz, locale);
+	public static final <T extends Translation> ReferencedLocaleImpl<T> create(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz, Locale locale) {
+		return new ReferencedLocaleImpl<T>(configDir, configType, itemStackSerializerType, clazz, locale);
 	}
 
-	public static final <T extends Translation> ReferencedLocaleImpl<T> create(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object, Locale locale) {
-		return new ReferencedLocaleImpl<T>(plugin, configDir, configType, itemStackSerializerType, object, locale);
+	public static final <T extends Translation> ReferencedLocaleImpl<T> create(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object, Locale locale) {
+		return new ReferencedLocaleImpl<T>(configDir, configType, itemStackSerializerType, object, locale);
 	}
 
 	private final Locale locale;
-	private ReferencedLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz, Locale locale) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, clazz);
+	private ReferencedLocaleImpl(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Class<T> clazz, Locale locale) {
+		super(configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, clazz);
 		this.locale = locale;
 	}
 
-	private ReferencedLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object, Locale locale) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, object);
+	private ReferencedLocaleImpl(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, T object, Locale locale) {
+		super(configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null, object);
 		this.locale = locale;
 	}
 

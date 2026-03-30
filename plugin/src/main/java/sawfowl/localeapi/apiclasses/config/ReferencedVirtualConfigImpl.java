@@ -1,6 +1,5 @@
 package sawfowl.localeapi.apiclasses.config;
 
-import java.nio.file.Path;
 import java.util.Objects;
 
 import org.spongepowered.configurate.ConfigurateException;
@@ -11,39 +10,38 @@ import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.config.Config;
-import sawfowl.localeapi.api.config.ReferencedConfig;
+import sawfowl.localeapi.api.config.ReferencedVirtualConfig;
+import sawfowl.localeapi.api.config.VirtualConfig;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
-public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends ConfigImpl implements ReferencedConfig<T>{
+public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends VirtualConfigImpl implements ReferencedVirtualConfig<T>{
 
-	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz2) {
-		return new ReferencedConfigImpl<T, ConfigurationNode>(configDir, name, configType, itemStackSerializerType, serializers, clazz2);
+	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
+		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, clazz);
 	}
 
-	public static final <T> ReferencedConfigImpl<T, ConfigurationNode> create(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
-		return new ReferencedConfigImpl<T, ConfigurationNode>(configDir, name, configType, itemStackSerializerType, serializers, object);
+	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
+		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, object);
 	}
 
 	private ConfigurationReference<N> configurationReference;
 	private ValueReference<T, N> valueReference;
 	private Class<T> clazz;
-
-	protected ReferencedConfigImpl(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
-		super(configDir, name, configType, itemStackSerializerType, serializers);
+	protected ReferencedVirtualConfigImpl(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
+		super("", configType, itemStackSerializerType, serializers);
 		Objects.requireNonNull(clazz);
 		this.clazz = clazz;
 		load();
-		if(!getPath().toFile().exists()) save();
+		save();
 	}
 
 	@SuppressWarnings("unchecked")
-	protected ReferencedConfigImpl(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
-		super(configDir, name, configType, itemStackSerializerType, serializers);
+	protected ReferencedVirtualConfigImpl(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
+		super("", configType, itemStackSerializerType, serializers);
 		Objects.requireNonNull(object);
 		this.clazz = (Class<T>) object.getClass();
 		load();
-		if(!getPath().toFile().exists()) save(object);
+		save(object);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -72,10 +70,11 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public <C extends Config> C load() {
+	public <C extends VirtualConfig> C load() {
+		updateBuffers();
 		try {
 			configurationReference = (ConfigurationReference<N>) super.selectLoader().loadToReference();
-			configurationReference.load();
+			// configurationReference.load();
 			valueReference = configurationReference.referenceTo(clazz);
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
@@ -85,14 +84,18 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
-	public <C extends Config> C save() {
+	public <C extends VirtualConfig> C save() {
 		valueReference.setAndSave(get());
+		updateRawData();
+		load();
 		return (C) this;
 	}
 
 	@Override
 	public <E extends T> void save(E object) {
 		valueReference.setAndSave(object);
+		updateRawData();
+		load();
 	}
 
 	@Override
@@ -105,19 +108,19 @@ public class ReferencedConfigImpl<T, N extends ConfigurationNode> extends Config
 
 	@SuppressWarnings({ "unchecked", "hiding" })
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference(T config) {
+	public <T, O extends ReferencedVirtualConfig<T>> O toReference(T config) {
 		return (O) this;
 	}
 
 	@SuppressWarnings({ "unchecked", "hiding" })
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference(Class<T> config) {
+	public <T, O extends ReferencedVirtualConfig<T>> O toReference(Class<T> config) {
 		return (O) this;
 	}
 
 	@SuppressWarnings({ "unchecked", "hiding" })
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference() {
+	public <T, O extends ReferencedVirtualConfig<T>> O toReference() {
 		return (O) this;
 	}
 

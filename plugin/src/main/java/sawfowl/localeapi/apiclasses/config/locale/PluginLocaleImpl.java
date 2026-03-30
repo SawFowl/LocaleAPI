@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import org.spongepowered.api.util.locale.Locales;
 import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocalesList;
@@ -22,15 +21,15 @@ import sawfowl.localeapi.apiclasses.config.ConfigImpl;
 
 public class PluginLocaleImpl extends ConfigImpl implements PluginLocale {
 
-	public static final PluginLocaleImpl create(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
-		return new PluginLocaleImpl(plugin, configDir, configType, itemStackSerializerType, locale, localesList);
+	public static final PluginLocaleImpl create(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
+		return new PluginLocaleImpl(configDir, configType, itemStackSerializerType, locale, localesList);
 	}
 
 	private final Locale locale;
 	private final LocalesList<? extends Translation> localesList;
 	private final boolean def;
-	private PluginLocaleImpl(PluginContainer plugin, Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
-		super(plugin, configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null);
+	private PluginLocaleImpl(Path configDir, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, Locale locale, LocalesList<? extends Translation> localesList) {
+		super(configDir, locale.toLanguageTag(), configType, itemStackSerializerType, null);
 		this.locale = locale;
 		def = locale.equals(Locales.DEFAULT);
 		this.localesList = localesList;

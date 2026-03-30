@@ -1,6 +1,9 @@
 package sawfowl.localeapi.apiclasses.config;
 
-import java.nio.file.Path;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,37 +18,39 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import io.leangen.geantyref.TypeToken;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.config.Config;
-import sawfowl.localeapi.api.config.ReferencedConfig;
+import sawfowl.localeapi.api.config.ReferencedVirtualConfig;
+import sawfowl.localeapi.api.config.VirtualConfig;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.apiclasses.services.ConfigurationServiceImplement;
 
-public class ConfigImpl implements Config {
+public class VirtualConfigImpl implements VirtualConfig {
 
-	public static final ConfigImpl create(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
-		return new ConfigImpl(configDir, name, configType, itemStackSerializerType, serializers);
+	public static VirtualConfigImpl create(String rawData, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
+		return new VirtualConfigImpl(rawData, configType, itemStackSerializerType, serializers);
 	}
 
 	private final ConfigTypes type;
 	private final ItemStackSerializerType itemStackSerializerType;
+	private String rawData = "";
+	protected TypeSerializerCollection serializers;
 	private ConfigurationNode node;
 	private ConfigurationLoader<? extends ConfigurationNode> loader;
-	private ReferencedConfig<?> referenced;
-	private Path path;
-	private String name;
-	protected TypeSerializerCollection serializers;
-	protected ConfigImpl(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
-		this.path = configDir.resolve(name + configType.toString());
+	private BufferedWriter bufferedWriter;
+	private StringWriter stringWriter;
+	private BufferedReader bufferedReader;
+	private StringReader stringReader;
+	private ReferencedVirtualConfig<?> referenced;
+	public VirtualConfigImpl(String rawData, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
+		this.rawData = rawData;
 		this.type = configType;
-		this.name = name;
 		this.itemStackSerializerType = itemStackSerializerType;
 		this.serializers = serializers;
-		if(!(this instanceof ReferencedConfigImpl)) load();
+		if(!(this instanceof ReferencedVirtualConfigImpl)) load();
 	}
 
 	@Override
-	public Path getPath() {
-		return path;
+	public String getRawData() {
+		return rawData;
 	}
 
 	@Override
@@ -67,22 +72,20 @@ public class ConfigImpl implements Config {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference(T config) {
-		Objects.requireNonNull(config);
-		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(path, getName(), type, getItemStackSerializerType(), serializers, config)) : referenced);
+	public <T, O extends ReferencedVirtualConfig<T>> O toReference(T config) {
+		return (O) (referenced == null ? (referenced = ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, serializers, config)) : referenced);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference(Class<T> config) {
-		Objects.requireNonNull(config);
-		return (O) (referenced == null ? (referenced = ReferencedConfigImpl.create(path, getName(), type, getItemStackSerializerType(), serializers, config)) : referenced);
+	public <T, O extends ReferencedVirtualConfig<T>> O toReference(Class<T> config) {
+		return (O) (referenced == null ? (referenced = ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, serializers, config)) : referenced);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T, O extends ReferencedConfig<T>> O toReference() {
-		return (O) referenced;
+	public <T, O extends ReferencedVirtualConfig<T>> @Nullable O toReference() {
+		return (@Nullable O) referenced;
 	}
 
 	@Override
@@ -166,18 +169,14 @@ public class ConfigImpl implements Config {
 	}
 
 	@Override
-	public boolean fileExist() {
-		return path.toFile().exists();
-	}
-
-	@Override
 	public boolean hasReferenced() {
 		return referenced != null;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <C extends Config> C load() {
+	public <C extends VirtualConfig> C load() {
+		updateBuffers();
 		try {
 			if(loader == null) loader = selectLoader();
 			node = loader.load();
@@ -189,9 +188,10 @@ public class ConfigImpl implements Config {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <C extends Config> C save() {
+	public <C extends VirtualConfig> C save() {
 		try {
 			loader.save(node);
+			updateRawData();
 		} catch (ConfigurateException e) {
 			e.printStackTrace();
 		}
@@ -199,15 +199,18 @@ public class ConfigImpl implements Config {
 	}
 
 	<T, C extends ConfigurationNode> ConfigurationLoader<C> selectLoader() {
-		return ConfigurationServiceImplement.getInstance().createConfigLoader(path, type, itemStackSerializerType, serializers);
+		return ConfigurationServiceImplement.getInstance().createConfigLoader(bufferedWriter, bufferedReader, type, itemStackSerializerType, serializers);
 	}
 
-	protected String getName() {
-		return name;
+	protected void updateRawData() {
+		rawData = stringWriter.toString();
 	}
 
-	protected ItemStackSerializerType getItemStackSerializerType() {
-		return itemStackSerializerType;
+	protected void updateBuffers() {
+		stringWriter = new StringWriter();
+		bufferedWriter = new BufferedWriter(stringWriter);
+		stringReader = new StringReader(rawData);
+		bufferedReader = new BufferedReader(stringReader);
 	}
 
 }

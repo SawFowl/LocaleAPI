@@ -10,6 +10,7 @@ public class ConfigComments {
 		ConfigComments comments = new ConfigComments();
 		comments.configType = "Тип конфигурации по умолчанию, если ее тип не был указан плагином.\n"
 				+ "Это всегда применяется к основной конфигурации LocaleAPI.\n"
+				+ "Это никогда не применяется к виртуальным конфигурациям. Их тип всегда должен быть указан разработчиком плагина, который их использует.\n"
 				+ "Допустимые варианты:\n"
 				+ "Hocon - Стандартная конфигурация Sponge. Имеет некоторое сходство с Json. Поддерживает комментарии.\n"
 				+ "Json - Альтернативный вид конфигурации. Классический Json. Не поддерживает комментарии.\n"
@@ -29,6 +30,7 @@ public class ConfigComments {
 	@Setting("ConfigType")
 	private String configType = "The default configuration type if the type was not specified by the plugin.\n"
 			+ "This always applies to the main LocaleAPI configuration.\n"
+			+ "This never applies to virtual configurations, which must always be specified by the plugin developer that uses them.\n"
 			+ "Acceptable variants:\n"
 			+ "Hocon - Standard Sponge configuration. Has some similarities with Json. Supports comments.\n"
 			+ "Json - Alternative configuration format. Classic Json. Does not support comments.\n"

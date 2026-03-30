@@ -7,7 +7,6 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
-import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
@@ -27,8 +26,8 @@ public interface ReferencedConfig<T> extends Config {
 	 * @param clazz - The serializable class of your configuration.
 	 */
 	@Deprecated
-	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, Class<T> clazz) {
-		return ConfigurationService.getInstance().createReferencedConfig(plugin, clazz).setPath(configDir).setName(name).setType(configType).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
+	static <T> ReferencedConfig<T> create(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, Class<T> clazz) {
+		return ConfigurationService.getInstance().createReferencedConfig(clazz).setPath(configDir).setName(name).setType(configType).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
 	}
 
 	/**
@@ -41,8 +40,8 @@ public interface ReferencedConfig<T> extends Config {
 	 * @param itemStackSerializerType - A variant of writing serialized data for an object with the ItemStack type.
 	 * @param object - An object of the serializable class of your configuration.
 	 */
-	static <T> ReferencedConfig<T> create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, T object) {
-		return (ReferencedConfig<T>) ConfigurationService.getInstance().createReferencedConfig(plugin, object).setPath(configDir).setName(name).setType(configType).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
+	static <T> ReferencedConfig<T> create(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers, T object) {
+		return (ReferencedConfig<T>) ConfigurationService.getInstance().createReferencedConfig(object).setPath(configDir).setName(name).setType(configType).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
 	}
 
 	/**

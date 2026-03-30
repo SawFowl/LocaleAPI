@@ -1,8 +1,11 @@
 package sawfowl.localeapi.apiclasses.services;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.nio.file.Path;
 
 import org.jetbrains.annotations.Nullable;
+
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.item.inventory.ItemStack;
@@ -17,7 +20,6 @@ import org.spongepowered.configurate.objectmapping.meta.NodeResolver;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
-import org.spongepowered.plugin.PluginContainer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -28,13 +30,17 @@ import net.kyori.adventure.serializer.configurate4.ConfigurateComponentSerialize
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.LocalisedComment;
-import sawfowl.localeapi.api.config.builders.ReferencedBuilder;
-import sawfowl.localeapi.api.config.builders.SimpleBuilder;
+import sawfowl.localeapi.api.config.builders.ReferencedConfigBuilder;
+import sawfowl.localeapi.api.config.builders.ReferencedVirtualConfigBuilder;
+import sawfowl.localeapi.api.config.builders.SimpleConfigBuilder;
+import sawfowl.localeapi.api.config.builders.SimpleVirtualConfigBuilder;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 import sawfowl.localeapi.api.services.ConfigurationService;
 import sawfowl.localeapi.apiclasses.LocalisedCommentFactory;
 import sawfowl.localeapi.apiclasses.config.builders.ReferencedBuilderImpl;
+import sawfowl.localeapi.apiclasses.config.builders.ReferencedVirtualBuilderImpl;
 import sawfowl.localeapi.apiclasses.config.builders.SimpleBuilderImpl;
+import sawfowl.localeapi.apiclasses.config.builders.SimpleVirtualBuilderImpl;
 import sawfowl.localeapi.apiclasses.serializers.ConfigTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.LAEnumItemStackTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.itemstack.ItemStackSerializer;
@@ -87,18 +93,33 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	}
 
 	@Override
-	public SimpleBuilder createSimpleConfig(PluginContainer container) {
-		return new SimpleBuilderImpl(container);
+	public SimpleConfigBuilder createSimpleConfig() {
+		return new SimpleBuilderImpl();
 	}
 
 	@Override
-	public <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type) {
-		return new ReferencedBuilderImpl<T>(container, type);
+	public <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type) {
+		return new ReferencedBuilderImpl<>(type);
 	}
 
 	@Override
-	public <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, T value) {
-		return new ReferencedBuilderImpl<T>(container, value);
+	public <T> ReferencedConfigBuilder<T> createReferencedConfig(T value) {
+		return new ReferencedBuilderImpl<>(value);
+	}
+
+	@Override
+	public SimpleVirtualConfigBuilder createVirtualConfig() {
+		return new SimpleVirtualBuilderImpl();
+	}
+
+	@Override
+	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type) {
+		return new ReferencedVirtualBuilderImpl<>(type);
+	}
+
+	@Override
+	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(T value) {
+		return new ReferencedVirtualBuilderImpl<>(value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -120,6 +141,17 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case GEYSER_YAML: return (ConfigurationLoader<C>) createGeyserYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(BufferedWriter bufferedWriter, BufferedReader bufferedReader, ConfigTypes loaderType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
+		switch (loaderType) {
+			case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
+			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
+			case GEYSER_YAML: return (ConfigurationLoader<C>) createGeyserYamlConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
+			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
 		}
 	}

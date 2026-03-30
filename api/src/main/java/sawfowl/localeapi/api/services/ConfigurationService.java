@@ -11,13 +11,14 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
-import org.spongepowered.plugin.PluginContainer;
 
 import com.google.inject.Inject;
 
 import sawfowl.localeapi.api.ConfigTypes;
-import sawfowl.localeapi.api.config.builders.ReferencedBuilder;
-import sawfowl.localeapi.api.config.builders.SimpleBuilder;
+import sawfowl.localeapi.api.config.builders.ReferencedConfigBuilder;
+import sawfowl.localeapi.api.config.builders.ReferencedVirtualConfigBuilder;
+import sawfowl.localeapi.api.config.builders.SimpleConfigBuilder;
+import sawfowl.localeapi.api.config.builders.SimpleVirtualConfigBuilder;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public abstract class ConfigurationService {
@@ -29,12 +30,17 @@ public abstract class ConfigurationService {
 		return INSTANCE;
 	}
 
-	public abstract SimpleBuilder createSimpleConfig(PluginContainer container);
+	public abstract SimpleConfigBuilder createSimpleConfig();
 
-	public abstract <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type);
+	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type);
 
-	public abstract <T> ReferencedBuilder<T> createReferencedConfig(PluginContainer container, T value);
+	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(T value);
 
+	public abstract SimpleVirtualConfigBuilder createVirtualConfig();
+
+	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type);
+
+	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(T value);
 
 	/**
 	 * Creating a configuration loader with a type.

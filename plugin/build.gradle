@@ -14,7 +14,6 @@ shadowJar {
 	archiveBaseName.set("${rootProject.name}-${rootProject.version}")
 	archiveClassifier.set('')
 	
-	// Исключаем затенение пакета org.spongepowered.configurate
 	exclude 'org/spongepowered/configurate/**'
 	
 	dependencies {
@@ -22,13 +21,6 @@ shadowJar {
 		include(project(path: ':shading'))
 		include(project(path: ':api'))
 	}
-	
-	// Если нужно оставить какие-то классы из configurate, можно добавить их обратно
-	// from {
-	//     configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-	// } {
-	//     include 'org/spongepowered/configurate/serialize/**'
-	// }
 }
 
 sponge {
@@ -59,5 +51,10 @@ sponge {
 	}
 }
 
-// Создаем fat JAR с затененными зависимостями
+tasks.withType(Jar).configureEach {
+	if (it.name == 'jar') {
+		it.enabled = false
+	}
+}
+
 tasks.build.dependsOn tasks.shadowJar

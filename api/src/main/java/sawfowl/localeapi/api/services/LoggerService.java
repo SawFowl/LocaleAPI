@@ -9,6 +9,10 @@ public abstract class LoggerService {
 	@Inject
 	private static LoggerService INSTANCE;
 
+	/**
+	 * Getting the API.<br>
+	 * You can use this method in your plugin's constructor if your plugin is loaded after LocaleAPI.
+	 */
 	public static LoggerService getInstance() {
 		return INSTANCE;
 	}

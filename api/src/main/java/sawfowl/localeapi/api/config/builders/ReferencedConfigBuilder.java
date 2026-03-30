@@ -10,16 +10,34 @@ import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public interface ReferencedConfigBuilder<T> {
 
+	/**
+	 * @return The path to the configuration file.
+	 */
 	ReferencedConfigBuilder<T> setPath(Path configDir);
 
+	/**
+	 * The name of your configuration file. You don't need to specify the type here.
+	 */
 	ReferencedConfigBuilder<T> setName(String name);
 
+	/**
+	 * The type of the configuration file.
+	 */
 	ReferencedConfigBuilder<T> setType(ConfigTypes type);
 
+	/**
+	 * A variant of writing serialized data for an object with the ItemStack type.
+	 */
 	ReferencedConfigBuilder<T> setItemStackSerializerType(ItemStackSerializerType type);
 
+	/**
+	 * Additional serializers for your data.
+	 */
 	ReferencedConfigBuilder<T> addSerializers(TypeSerializerCollection collection);
 
+	/**
+	 * Creating configurations.
+	 */
 	ReferencedConfig<T>  build();
 
 }

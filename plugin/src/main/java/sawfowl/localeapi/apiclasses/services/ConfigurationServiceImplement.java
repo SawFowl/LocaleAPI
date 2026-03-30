@@ -88,8 +88,8 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	}
 
 	@Override
-	public ConfigurationNode createVirtualNode(ItemStackSerializerType serializerType) {
-		return BasicConfigurationNode.root(o -> o.options().serializers(selectSerializersCollection(serializerType)));
+	public ConfigurationNode createVirtualNode(@Nullable ItemStackSerializerType serializerType) {
+		return serializerType == null ? BasicConfigurationNode.root() : BasicConfigurationNode.root(o -> o.options().serializers(selectSerializersCollection(serializerType)));
 	}
 
 	@Override

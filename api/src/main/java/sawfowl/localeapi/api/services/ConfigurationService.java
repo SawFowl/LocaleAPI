@@ -26,20 +26,42 @@ public abstract class ConfigurationService {
 	@Inject
 	private static ConfigurationService INSTANCE;
 
+	/**
+	 * Getting the API.<br>
+	 * You can use this method in your plugin's constructor if your plugin is loaded after LocaleAPI.
+	 */
 	public static ConfigurationService getInstance() {
 		return INSTANCE;
 	}
 
+	/**
+	 * Creating a simple configuration.
+	 */
 	public abstract SimpleConfigBuilder createSimpleConfig();
 
+	/**
+	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.
+	 */
 	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type);
 
+	/**
+	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.
+	 */
 	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(T value);
 
+	/**
+	 * Creating a simple virtual configuration.
+	 */
 	public abstract SimpleVirtualConfigBuilder createVirtualConfig();
 
+	/**
+	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.
+	 */
 	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type);
 
+	/**
+	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.
+	 */
 	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(T value);
 
 	/**
@@ -70,8 +92,14 @@ public abstract class ConfigurationService {
 	 */
 	public abstract TypeSerializerCollection selectSerializersCollection(ItemStackSerializerType serializerType);
 
-	public abstract ConfigurationNode createVirtualNode(ItemStackSerializerType serializerType);
+	/**
+	 * Creating a virtual configuration section.
+	 */
+	public abstract ConfigurationNode createVirtualNode(@Nullable ItemStackSerializerType serializerType);
 
+	/**
+	 * Combining serializer collections into a single collection.
+	 */
 	public static TypeSerializerCollection mergeSerializers(@NotNull TypeSerializerCollection first, @Nullable TypeSerializerCollection second) {
 		Objects.requireNonNull(first);
 		return second == null ? first : second.childBuilder().registerAll(first).build();

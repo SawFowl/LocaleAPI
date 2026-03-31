@@ -140,8 +140,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 
 	public static final class Builder extends AbstractConfigurationLoader.Builder<Builder, TomlConfigurationLoader> {
 
-		private Builder() {
-		}
+		private Builder(){}
 
 		@Override
 		public TomlConfigurationLoader build() {

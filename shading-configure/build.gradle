@@ -5,6 +5,7 @@ plugins {
 dependencies {
 	implementation 'org.spongepowered:configurate-xml:4.2.0'
 	implementation 'org.spongepowered:configurate-jackson:4.2.0'
+    implementation 'com.electronwill.night-config:toml:3.8.3'
 }
 
 shadowJar {

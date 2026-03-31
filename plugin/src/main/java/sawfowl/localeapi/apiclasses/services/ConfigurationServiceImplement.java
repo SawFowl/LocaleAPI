@@ -44,6 +44,7 @@ import sawfowl.localeapi.apiclasses.config.builders.ReferencedBuilderImpl;
 import sawfowl.localeapi.apiclasses.config.builders.ReferencedVirtualBuilderImpl;
 import sawfowl.localeapi.apiclasses.config.builders.SimpleBuilderImpl;
 import sawfowl.localeapi.apiclasses.config.builders.SimpleVirtualBuilderImpl;
+import sawfowl.localeapi.apiclasses.config.loaders.TomlConfigurationLoader;
 import sawfowl.localeapi.apiclasses.serializers.ConfigTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.LAEnumItemStackTypeSerializer;
 import sawfowl.localeapi.apiclasses.serializers.itemstack.ItemStackSerializer;
@@ -98,6 +99,10 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 		return XmlConfigurationLoader.builder().writesExplicitType(true).defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
+	private TomlConfigurationLoader.Builder createTomlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
+		return TomlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+	}
+
 	@Override
 	public ConfigurationNode createVirtualNode(@Nullable ItemStackSerializerType serializerType) {
 		return serializerType == null ? BasicConfigurationNode.root() : BasicConfigurationNode.root(o -> o.options().serializers(selectSerializersCollection(serializerType)));
@@ -143,6 +148,7 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case JACKSON: return (ConfigurationLoader<C>) createJacksonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case XML: return (ConfigurationLoader<C>) createXmlConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case TOML: return (ConfigurationLoader<C>) createTomlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + configType);
 		}
 	}
@@ -156,6 +162,7 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case JACKSON: return (ConfigurationLoader<C>) createJacksonConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case XML: return (ConfigurationLoader<C>) createXmlConfigurationLoader(serializerType, otherSerializers).path(path).build();
+			case TOML: return (ConfigurationLoader<C>) createTomlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
 		}
 	}
@@ -169,6 +176,7 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
 			case JACKSON: return (ConfigurationLoader<C>) createJacksonConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
 			case XML: return (ConfigurationLoader<C>) createXmlConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
+			case TOML: return (ConfigurationLoader<C>) createTomlConfigurationLoader(serializerType, otherSerializers).sink(() -> bufferedWriter).source(() -> bufferedReader).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
 		}
 	}

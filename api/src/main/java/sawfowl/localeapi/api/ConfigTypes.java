@@ -96,6 +96,24 @@ public enum ConfigTypes {
 			return other == this || other == GEYSER_YAML;
 		}
 	},
+	TOML(".toml") {
+		@Override
+		public String toString() {
+			return ".toml";
+		}
+		@Override
+		public String getExtension() {
+			return "toml";
+		}
+		@Override
+		public String getTypeName() {
+			return "Toml";
+		}
+		@Override
+		public boolean comparableType(ConfigTypes other) {
+			return other == this || other == YAML;
+		}
+	},
 	/**PROPERTIES(".properties") {
 		@Override
 		public String toString() {

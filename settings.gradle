@@ -64,4 +64,4 @@ plugins {
 }
 
 rootProject.name = 'LocaleAPI'
-include("shading", "api", "plugin")
+include("shading-geyser", "api", "plugin")

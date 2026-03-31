@@ -32,6 +32,6 @@ api/bin
 plugin/.settings
 plugin/build
 plugin/bin
-shading/.settings
-shading/build
-shading/bin
+shading-geyser/.settings
+shading-geyser/build
+shading-geyser/bin

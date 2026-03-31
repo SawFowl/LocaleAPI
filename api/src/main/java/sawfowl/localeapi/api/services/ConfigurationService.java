@@ -10,6 +10,7 @@ import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import com.google.inject.Inject;
@@ -40,12 +41,14 @@ public abstract class ConfigurationService {
 	public abstract SimpleConfigBuilder createSimpleConfig();
 
 	/**
-	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.
+	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.<br>
+	 * See also {@link ConfigSerializable}
 	 */
 	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type);
 
 	/**
-	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.
+	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.<br>
+	 * See also {@link ConfigSerializable}
 	 */
 	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(T value);
 
@@ -55,12 +58,14 @@ public abstract class ConfigurationService {
 	public abstract SimpleVirtualConfigBuilder createVirtualConfig();
 
 	/**
-	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.
+	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.<br>
+	 * See also {@link ConfigSerializable}
 	 */
 	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type);
 
 	/**
-	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.
+	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.<br>
+	 * See also {@link ConfigSerializable}
 	 */
 	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(T value);
 

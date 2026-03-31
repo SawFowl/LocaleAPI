@@ -33,6 +33,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 
 	@Override
 	protected void loadInternal(CommentedConfigurationNode node, BufferedReader reader) throws ParsingException {
+		int lineNumber = 0;
 		try {
 			Path tempFile = Files.createTempFile(".temp-toml-config", ".toml");
 			tempFile.toFile().deleteOnExit();
@@ -41,6 +42,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 				while((line = reader.readLine()) != null) {
 					writer.write(line);
 					writer.newLine();
+					lineNumber++;
 				}
 			}
 			CommentedFileConfig nightConfig = CommentedFileConfig.builder(tempFile)
@@ -51,7 +53,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 			convertToConfigurate(nightConfig, node);
 			nightConfig.close();
 		} catch(IOException e) {
-			throw new ParsingException(node, 0, 0, null, null, e);
+			throw new ParsingException(node, lineNumber, 0, null, "Error parsing node " + node.key() == null ? "nulled" : node.key().toString(), e);
 		}
 	}
 

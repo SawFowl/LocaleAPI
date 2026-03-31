@@ -8,23 +8,8 @@ dependencies {
 }
 
 shadowJar {
-	//relocate('org.spongepowered.configurate', 'geysermc') {
-	//	include 'org.spongepowered.configurate.CommentedConfigurationNode.class'
-		// Исключаем ConfigurationLoader и связанные с ним классы
-	//	exclude 'org.spongepowered.configurate.ConfigurationLoader.class'
-	//	exclude 'org.spongepowered.configurate.ConfigurationLoader*'
-	//}
-	
-	//relocate('org.spongepowered.configurate.yaml', 'geysermc.yaml') {
-	//	include 'org.spongepowered.configurate.yaml.**'
-	//}
-	
-// 	relocate('org.spongepowered.configurate.loader', 'geysermc.loader') {
-// 		include 'org.spongepowered.configurate.loader.**'
-// 		exclude 'org.spongepowered.configurate.loader.ConfigurationLoader.class'
-// 		exclude 'org.spongepowered.configurate.loader.ConfigurationLoader*'
-// 	}
-//
+	exclude 'com/fasterxml/jackson/**'
+	exclude 'org/spongepowered/configurate/loader/**'
 	exclude 'org/spongepowered/configurate/objectmapping/**'
 	exclude 'org/spongepowered/configurate/reactive/**'
 	exclude 'org/spongepowered/configurate/reference/**'
@@ -34,13 +19,15 @@ shadowJar {
 	exclude 'org/spongepowered/configurate/*.class'
  	exclude 'io/**'
  	exclude 'net/**'
-
-	mergeServiceFiles()
-
+    exclude '**/package-info.class'
+	
 	exclude 'META-INF/maven/**'
+	exclude 'META-INF/services/com.fasterxml.jackson.core.JsonFactory'
 	exclude 'META-INF/*.SF'
 	exclude 'META-INF/*.DSA'
 	exclude 'META-INF/*.RSA'
+	
+	mergeServiceFiles()
 	archiveClassifier.set('')
 }
 

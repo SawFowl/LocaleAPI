@@ -15,7 +15,9 @@ public class ConfigComments {
 				+ "Hocon - Стандартная конфигурация Sponge. Имеет некоторое сходство с Json. Поддерживает комментарии.\n"
 				+ "Json - Альтернативный вид конфигурации. Классический Json. Не поддерживает комментарии.\n"
 				+ "Yaml - Альтернативный вид конфигурации. Использует блочную структуру. Наиболее удобен для чтения человеку. На текущий момент не поддерживает комментарии, возможно будет исправленно в будущем командой Sponge.\n"
-				+ "GeyserYaml - Альтернативный вид конфигурации. Использует блочную структуру. Наиболее удобен для чтения человеку. Поддерживает комментарии. Поддержка данного формата является экспериментальной.";
+				+ "GeyserYaml - Альтернативный вид конфигурации. Использует блочную структуру. Наиболее удобен для чтения человеку. Поддерживает комментарии. Поддержка данного формата является экспериментальной.\n"
+				+ "Jackson - Альтернативный вид конфигурации в формате json. Не поддерживает комментарии.\n"
+				+ "XML - Альтернативный вид конфигурации. Поддерживает комментарии, но не удобен для чтения.";
 		comments.forcedUse = "Принудительное применение указанного тут типа конфигурации к другим плагинам, которые используют возможности LocaleAPI.";
 		comments.path = "Путь по умолчанию к локализациям.\n"
 				+ "{LOCALEAPI_PATH} - Указывает на каталог конфигурации плагина LocaleAPI.\n"
@@ -35,7 +37,9 @@ public class ConfigComments {
 			+ "Hocon - Standard Sponge configuration. Has some similarities with Json. Supports comments.\n"
 			+ "Json - Alternative configuration format. Classic Json. Does not support comments.\n"
 			+ "Yaml - An alternative configuration format that uses a block structure and is easy to read. Currently, it does not support comments, but this may be fixed in the future by the Sponge team.\n"
-			+ "GeyserYaml - An alternative configuration format that uses a block structure and is easy to read. It supports comments. Support for this format is experimental.";
+			+ "GeyserYaml - An alternative configuration format that uses a block structure and is easy to read. It supports comments. Support for this format is experimental.\n"
+			+ "Jackson - An alternative configuration format in json format that does not support comments.\n"
+			+ "XML - An alternative configuration view that supports comments but is not easy to read.";
 	@Setting("ForcedUse")
 	private String forcedUse = "Forces the specified configuration type to be applied to other plugins that use the LocaleAPI.";
 	@Setting("Path")

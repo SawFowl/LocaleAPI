@@ -32,6 +32,34 @@ public enum ConfigTypes {
 			return "Json";
 		}
 	},
+	JACKSON(".jackson") {
+		@Override
+		public String toString() {
+			return ".jackson";
+		}
+		@Override
+		public String getExtension() {
+			return "jackson";
+		}
+		@Override
+		public String getTypeName() {
+			return "Jackson";
+		}
+	},
+	XML(".xml") {
+		@Override
+		public String toString() {
+			return ".xml";
+		}
+		@Override
+		public String getExtension() {
+			return "xml";
+		}
+		@Override
+		public String getTypeName() {
+			return "XML";
+		}
+	},
 	GEYSER_YAML(".yml") {
 		@Override
 		public String toString() {

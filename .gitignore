@@ -35,3 +35,6 @@ plugin/bin
 shading-geyser/.settings
 shading-geyser/build
 shading-geyser/bin
+shading-configure/.settings
+shading-configure/build
+shading-configure/bin

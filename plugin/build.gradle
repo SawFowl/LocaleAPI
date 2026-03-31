@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
 	implementation project(":shading-geyser")
+	implementation project(":shading-configure")
 	implementation project(":api")
 	implementation "org.spongepowered:spongeapi:${api}"
 	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
@@ -14,11 +15,12 @@ shadowJar {
 	archiveBaseName.set("${rootProject.name}-${rootProject.version}")
 	archiveClassifier.set('')
 	
-	exclude 'org/spongepowered/configurate/**'
+	exclude 'org/spongepowered/configurate/loader/ConfigurationLoader.class'
 	
 	dependencies {
 		exclude(dependency("org.spongepowered:spongeapi:${api}"))
 		include(project(path: ':shading-geyser'))
+		include(project(path: ':shading-configure'))
 		include(project(path: ':api'))
 	}
 }

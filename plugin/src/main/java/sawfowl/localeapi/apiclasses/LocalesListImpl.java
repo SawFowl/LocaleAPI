@@ -77,8 +77,8 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 	public PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale) {
 		Objects.requireNonNull(locale);
 		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && !configType.comparableType(getConfig().getConfigSettings().getType())) {
-			PluginLocale updated = PluginLocaleImpl.create(path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), locale, this);
+		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse() && !configType.comparableType(getConfig().getLocalesSettings().getType())) {
+			PluginLocale updated = PluginLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), locale, this);
 			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
 				PluginLocale old = PluginLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), locale, this);
 				try {
@@ -104,8 +104,8 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 		Objects.requireNonNull(clazz);
 		if(reference == null) reference = (Class<T>) clazz;
 		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && !configType.comparableType(getConfig().getConfigSettings().getType())) {
-			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), clazz, locale);
+		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse() && !configType.comparableType(getConfig().getLocalesSettings().getType())) {
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), clazz, locale);
 			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
 				ReferencedLocale<O> old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), clazz, locale);
 				updated.save(old.get());
@@ -133,8 +133,8 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 		Objects.requireNonNull(object);
 		if(reference == null) reference = (Class<T>) object.getClass();
 		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getConfigSettings().isForcedUse() && !configType.comparableType(getConfig().getConfigSettings().getType())) {
-			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getConfigSettings().getType(), localeService.getItemStackSerializer(container), object, locale);
+		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse() && !configType.comparableType(getConfig().getLocalesSettings().getType())) {
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), object, locale);
 			if(path.resolve(locale.toLanguageTag() + configType.toString()).toFile().exists()) {
 				ReferencedLocale<O> old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), object, locale);
 				updated.save(old.get());

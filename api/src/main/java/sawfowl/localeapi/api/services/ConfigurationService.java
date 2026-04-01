@@ -71,15 +71,15 @@ public abstract class ConfigurationService {
 
 	/**
 	 * Creating a configuration loader with a type.
+	 * The server administrator will not be able to override the configuration type created using this method.
 	 * 
-	 * @param <T> loaderClass - Configuration Loader Class.
-	 * @param <C> nodeClass - Configuration node processing class. Note that `{@link CommentedConfigurationNode}` is not suitable for configurations in Json format.
+	 * @param <C>  - Configuration node processing class. Note that `{@link CommentedConfigurationNode}` is not suitable for configurations in Json format.
 	 * @param path - Path to the configuration file.
 	 * @param configType - Configuration Type. To avoid errors, it must point to the same class loader as the `Class<T> loaderClass` parameter.
 	 * @param serializerType - The type of item serialization used. See {@linkplain #selectSerializersCollection(ItemStackSerializerType)}
 	 * @return
 	 */
-	public abstract <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers);
+	public abstract <C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Path path, ConfigTypes configType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers);
 
 	/**
 	 * Selecting serialization variant for items.<br>

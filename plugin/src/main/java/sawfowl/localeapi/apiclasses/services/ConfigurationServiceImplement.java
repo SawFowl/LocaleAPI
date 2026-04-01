@@ -140,7 +140,7 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Class<T> loaderClass, Class<C> nodeClass, Path path, ConfigTypes configType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
+	public <C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Path path, ConfigTypes configType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
 		switch (configType) {
 			case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
@@ -150,20 +150,6 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 			case XML: return (ConfigurationLoader<C>) createXmlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			case TOML: return (ConfigurationLoader<C>) createTomlConfigurationLoader(serializerType, otherSerializers).path(path).build();
 			default: throw new IllegalArgumentException("Inappropriate value: " + configType);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T, C extends ConfigurationNode> ConfigurationLoader<C> createConfigLoader(Path path, ConfigTypes loaderType, ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		switch (loaderType) {
-			case HOCON: return (ConfigurationLoader<C>) createHoconConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case YAML: return (ConfigurationLoader<C>) createYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case GEYSER_YAML: return (ConfigurationLoader<C>) createGeyserYamlConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case JSON: return (ConfigurationLoader<C>) createJsonConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case JACKSON: return (ConfigurationLoader<C>) createJacksonConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case XML: return (ConfigurationLoader<C>) createXmlConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			case TOML: return (ConfigurationLoader<C>) createTomlConfigurationLoader(serializerType, otherSerializers).path(path).build();
-			default: throw new IllegalArgumentException("Inappropriate value: " + loaderType);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package sawfowl.localeapi.api.config.builders;
 
+import java.io.File;
 import java.nio.file.Path;
 
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
@@ -9,6 +10,18 @@ import sawfowl.localeapi.api.config.ReferencedConfig;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public interface ReferencedConfigBuilder<T> {
+
+	default ReferencedConfigBuilder<T> fromFile(File file) {
+		if(file.exists() && file.toPath().getParent() != null) {
+			setPath(file.toPath().getParent());
+			ConfigTypes type = ConfigTypes.find(ConfigTypes.getExtension(file.getName()));
+			if(type != null) {
+				setType(type);
+				setName(file.getName().replace(type.toString(), ""));
+			}
+		}
+		return this;
+	}
 
 	/**
 	 * @return The path to the configuration file.

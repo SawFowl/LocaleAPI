@@ -120,7 +120,7 @@ public class LocaleAPI {
 			}
 		}
 		if(mainConfig != null) {
-			ConfigTypes type = ConfigTypes.getTypeByExtension(getExtension(mainConfig.getName()));
+			ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(mainConfig.getName()));
 			config = ConfigurationService.getInstance()
 				.createReferencedConfig(Config.class)
 				.setPath(configDirectory)
@@ -318,16 +318,6 @@ public class LocaleAPI {
 
 	private Optional<Statistic> getStatistic(ServerPlayer player, String key) {
 		return player.statistics().keySet().stream().filter(statistic -> (statistic.toString().contains(key.replace(':', '.')))).findFirst();
-	}
-
-	private String getExtension(String fileName) {
-		char ch;
-		int len;
-		if(fileName==null || (len = fileName.length())==0 || (ch = fileName.charAt(len-1))=='/' || ch=='\\' || ch=='.' ) return "";
-		int dotInd = fileName.lastIndexOf('.'),
-			sepInd = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
-		if(dotInd <= sepInd) return "";
-		else return fileName.substring(dotInd+1).toLowerCase();
 	}
 
 	final class InjectorAPI extends AbstractModule {

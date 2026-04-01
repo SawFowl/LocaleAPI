@@ -31,7 +31,7 @@ public class VirtualConfigImpl implements VirtualConfig {
 
 	private final ConfigTypes type;
 	private final ItemStackSerializerType itemStackSerializerType;
-	private String rawData = "";
+	protected String rawData = "";
 	protected TypeSerializerCollection serializers;
 	private ConfigurationNode node;
 	private ConfigurationLoader<? extends ConfigurationNode> loader;
@@ -46,6 +46,14 @@ public class VirtualConfigImpl implements VirtualConfig {
 		this.itemStackSerializerType = itemStackSerializerType;
 		this.serializers = serializers;
 		if(!(this instanceof ReferencedVirtualConfigImpl)) load();
+	}
+
+	@Override
+	public void loadFromRaw(String rawData) {
+		Objects.requireNonNull(rawData);
+		this.rawData = rawData;
+		updateBuffers();
+		load();
 	}
 
 	@Override

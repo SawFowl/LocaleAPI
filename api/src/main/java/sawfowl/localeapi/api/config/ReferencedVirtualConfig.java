@@ -6,6 +6,8 @@ import org.spongepowered.configurate.reference.ValueReference;
 
 public interface ReferencedVirtualConfig<T> extends VirtualConfig {
 
+	void loadFromRaw(String rawData);
+
 	/**
 	 * Getting the configuration loader.
 	 */

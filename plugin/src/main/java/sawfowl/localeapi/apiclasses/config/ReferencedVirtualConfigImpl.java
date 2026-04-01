@@ -44,6 +44,14 @@ public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends
 		save(object);
 	}
 
+	@Override
+	public void loadFromRaw(String rawData) {
+		Objects.requireNonNull(rawData);
+		super.rawData = rawData;
+		updateBuffers();
+		load();
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ConfigurationReference<N> getReference() {

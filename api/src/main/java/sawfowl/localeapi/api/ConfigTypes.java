@@ -156,4 +156,14 @@ public enum ConfigTypes {
 		return Stream.of(ConfigTypes.values()).filter(v -> v.toString().equals(extension) || v.getExtension().equals(extension)).findFirst().orElse(HOCON);
 	}
 
+	public static String getExtension(String fileName) {
+		char ch;
+		int len;
+		if(fileName==null || (len = fileName.length())==0 || (ch = fileName.charAt(len-1))=='/' || ch=='\\' || ch=='.' ) return "";
+		int dotInd = fileName.lastIndexOf('.'),
+			sepInd = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+		if(dotInd <= sepInd) return "";
+		else return fileName.substring(dotInd+1).toLowerCase();
+	}
+
 }

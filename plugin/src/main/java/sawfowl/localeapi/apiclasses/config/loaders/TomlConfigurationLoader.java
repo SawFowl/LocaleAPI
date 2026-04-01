@@ -90,16 +90,15 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 		for(Config.Entry entry : source.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			if(value instanceof Config) {
-				convertToConfigurate((Config) value, target.node(key));
+			if(value instanceof Config config) {
+				convertToConfigurate(config, target.node(key));
 			} else if(value instanceof Map) {
 				@SuppressWarnings("unchecked")
-				Map<String, Object> map =(Map<String, Object>) value;
+				Map<String, Object> map = (Map<String, Object>) value;
 				for(Map.Entry<String, Object> mapEntry : map.entrySet()) convertValueToConfigurate(mapEntry.getValue(), target.node(key, mapEntry.getKey()));
 			} else convertValueToConfigurate(value, target.node(key));
 		}
-		if(source instanceof CommentedConfig) {
-			CommentedConfig commentedSource =(CommentedConfig) source;
+		if(source instanceof CommentedConfig commentedSource) {
 			for(Config.Entry entry : source.entrySet()) {
 				String key = entry.getKey();
 				String comment = commentedSource.getComment(key);
@@ -130,8 +129,9 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 				} else target.set(key, child.raw());
 				if(target instanceof CommentedConfig && child instanceof CommentedConfigurationNode commentedNode && commentedNode.comment() != null && !commentedNode.comment().isEmpty()) {
 					String comment = commentedNode.comment();
-					if(comment.contains("\n")) comment = comment.replace("\n", "\n ");
-					if(!comment.startsWith(" ")) comment = " " + comment;
+					String[] lines = comment.split("\n");
+					for(int i = 0; i < lines.length; i++) if(!lines[i].startsWith(" ")) lines[i] = " " + lines[i];
+					comment = String.join("\n", lines);
 					((CommentedConfig) target).setComment(key, comment);
 				}
 			}

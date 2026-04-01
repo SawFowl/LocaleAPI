@@ -20,6 +20,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class TomlConfigurationLoader extends AbstractConfigurationLoader<CommentedConfigurationNode> {
 
@@ -80,9 +81,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 	private void convertValueToConfigurate(Object value, ConfigurationNode target) {
 		if(value == null) return;
 		try {
-			// Конвертируем значение при чтении через CollectionValueConverter
-			Object converted = CollectionValueConverter.fromNightConfigCompatible(value);
-			target.set(converted);
+			target.set(CollectionValueConverter.fromNightConfigCompatible(value));
 		} catch(SerializationException e) {
 			e.printStackTrace();
 		}
@@ -100,9 +99,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 				for(Map.Entry<String, Object> mapEntry : map.entrySet()) {
 					convertValueToConfigurate(mapEntry.getValue(), target.node(key, mapEntry.getKey()));
 				}
-			} else {
-				convertValueToConfigurate(value, target.node(key));
-			}
+			} else convertValueToConfigurate(value, target.node(key));
 		}
 		if(source instanceof CommentedConfig commentedSource) {
 			for(Config.Entry entry : source.entrySet()) {
@@ -110,9 +107,7 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 				String comment = commentedSource.getComment(key);
 				if(comment == null || comment.isEmpty()) continue;
 				if(comment.contains("\n")) {
-					String[] lines = comment.split("\n");
-					for(int i = 0; i < lines.length; i++) if(lines[i].startsWith(" ")) lines[i] = lines[i].trim();
-					comment = String.join("\n", lines);
+					comment = String.join("\n", Stream.of(comment.split("\n")).map(str -> str.trim()).toArray(String[]::new));
 				} else comment = comment.trim();
 				if(target.node(key) instanceof CommentedConfigurationNode commentedNode) commentedNode.comment(comment);
 			}
@@ -125,38 +120,24 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 				if(entry.getKey() == null) continue;
 				String key = entry.getKey().toString();
 				ConfigurationNode child = entry.getValue();
-				
 				Object value;
 				if(child.isMap()) {
-					// Для Map создаем подконфигурацию
 					Config subConfig = TomlFormat.instance().createConfig();
 					convertToNightConfig(child, subConfig);
 					value = subConfig;
 				} else if(child.isList()) {
-					// Для списков преобразуем каждый элемент
 					Object raw = child.raw();
-					if (raw instanceof Object[] array) {
-						Object[] converted = new Object[array.length];
-						for (int i = 0; i < array.length; i++) {
-							converted[i] = CollectionValueConverter.toNightConfigCompatible(array[i]);
-						}
-						value = converted;
-					} else {
-						value = CollectionValueConverter.toNightConfigCompatible(raw);
-					}
-				} else {
-					// Для обычных значений используем преобразование
-					value = CollectionValueConverter.toNightConfigCompatible(child.raw());
-				}
-				
+					if(raw instanceof Object[] array) {
+						value = Stream.of(array).map(CollectionValueConverter::toNightConfigCompatible).toArray();
+					} else value = CollectionValueConverter.toNightConfigCompatible(raw);
+				} else value = CollectionValueConverter.toNightConfigCompatible(child.raw());
 				target.set(key, value);
-				
-				if(target instanceof CommentedConfig && child instanceof CommentedConfigurationNode commentedNode && commentedNode.comment() != null && !commentedNode.comment().isEmpty()) {
+				if(target instanceof CommentedConfig commentedConfig && child instanceof CommentedConfigurationNode commentedNode && commentedNode.comment() != null && !commentedNode.comment().isEmpty()) {
 					String comment = commentedNode.comment();
-					String[] lines = comment.split("\n");
-					for(int i = 0; i < lines.length; i++) if(!lines[i].startsWith(" ")) lines[i] = " " + lines[i];
-					comment = String.join("\n", lines);
-					((CommentedConfig) target).setComment(key, comment);
+					if(comment.contains("\n")) {
+						comment = String.join("\n", Stream.of(comment.split("\n")).map(str -> " " + str).toArray(String[]::new));
+					} else if(!comment.startsWith(" ")) comment = " " + comment;
+					commentedConfig.setComment(key, comment);
 				}
 			}
 		}

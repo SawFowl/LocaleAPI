@@ -1,12 +1,21 @@
 package sawfowl.localeapi.api.config;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
 
+import com.google.gson.JsonElement;
+
 public interface ReferencedVirtualConfig<T> extends VirtualConfig {
 
-	void loadFromRaw(String rawData);
+	ReferencedVirtualConfig<T> loadFromRaw(String rawData);
+
+	@Nullable
+	T convertFromJson(JsonElement element);
+
+	@Nullable
+	<E extends JsonElement> E toJson(Class<E> jsonClass);
 
 	/**
 	 * Getting the configuration loader.

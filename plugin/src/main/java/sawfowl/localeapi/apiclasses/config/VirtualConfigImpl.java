@@ -49,11 +49,12 @@ public class VirtualConfigImpl implements VirtualConfig {
 	}
 
 	@Override
-	public void loadFromRaw(String rawData) {
+	public VirtualConfig loadFromRaw(String rawData) {
 		Objects.requireNonNull(rawData);
 		this.rawData = rawData;
 		updateBuffers();
 		load();
+		return this;
 	}
 
 	@Override

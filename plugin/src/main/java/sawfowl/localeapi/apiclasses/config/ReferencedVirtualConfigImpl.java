@@ -7,14 +7,17 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
+import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
+
+import com.google.gson.JsonElement;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.config.ReferencedVirtualConfig;
 import sawfowl.localeapi.api.config.VirtualConfig;
 import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
-public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends VirtualConfigImpl implements ReferencedVirtualConfig<T>{
+public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends VirtualConfigImpl implements ReferencedVirtualConfig<T> {
 
 	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
 		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, clazz);
@@ -45,11 +48,37 @@ public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends
 	}
 
 	@Override
-	public void loadFromRaw(String rawData) {
+	public ReferencedVirtualConfig<T> loadFromRaw(String rawData) {
 		Objects.requireNonNull(rawData);
 		super.rawData = rawData;
 		updateBuffers();
 		load();
+		return this;
+	}
+
+	@Override
+	public T convertFromJson(JsonElement element) {
+		try {
+			updateBuffers();
+			valueReference.node().set(element);
+			configurationReference.save(valueReference.node());
+			load();
+			updateRawData();
+			return valueReference.get();
+		} catch (ConfigurateException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public <E extends JsonElement> E toJson(Class<E> jsonClass) {
+		try {
+			return valueReference.node().get(jsonClass);
+		} catch (SerializationException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@SuppressWarnings("unchecked")

@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
+import com.google.gson.JsonObject;
+
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.config.ReferencedVirtualConfig;
 import sawfowl.localeapi.api.config.builders.ReferencedVirtualConfigBuilder;
@@ -17,10 +19,21 @@ public class ReferencedVirtualBuilderImpl<T> implements ReferencedVirtualConfigB
 	private ConfigTypes type;
 	private ItemStackSerializerType itemStackSerializerType;
 	private TypeSerializerCollection collection;
-	public ReferencedVirtualBuilderImpl(Class<T> type) {
+	private String rawData;
+	private JsonObject rawJsonData;
+	public ReferencedVirtualBuilderImpl(Class<T> type, String rawData) {
 		Objects.requireNonNull(type);
 		this.clazz = type;
 		this.value = null;
+		this.rawData = rawData;
+	}
+
+	public ReferencedVirtualBuilderImpl(Class<T> type, JsonObject rawJsonData) {
+		Objects.requireNonNull(type);
+		Objects.requireNonNull(rawJsonData);
+		this.clazz = type;
+		this.value = null;
+		this.rawJsonData = rawJsonData;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -54,7 +67,11 @@ public class ReferencedVirtualBuilderImpl<T> implements ReferencedVirtualConfigB
 		Objects.requireNonNull(clazz);
 		return value == null
 			?
-			ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, collection, clazz)
+			rawJsonData == null 
+				?
+				ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, collection, clazz, rawData)
+				:
+				ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, collection, clazz, rawJsonData)
 			:
 			ReferencedVirtualConfigImpl.create(type, itemStackSerializerType, collection, value);
 	}

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.NodePath;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.reference.ConfigurationReference;
 import org.spongepowered.configurate.reference.ValueReference;
@@ -11,6 +12,7 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 import sawfowl.localeapi.api.ConfigTypes;
 import sawfowl.localeapi.api.config.ReferencedVirtualConfig;
@@ -19,8 +21,12 @@ import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends VirtualConfigImpl implements ReferencedVirtualConfig<T> {
 
-	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
-		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, clazz);
+	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz, String rawData) {
+		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, clazz, rawData);
+	}
+
+	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz, JsonObject rawJsonData) {
+		return new ReferencedVirtualConfigImpl<T, ConfigurationNode>(configType, itemStackSerializerType, serializers, clazz, rawJsonData);
 	}
 
 	public static final <T> ReferencedVirtualConfigImpl<T, ConfigurationNode> create(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, T object) {
@@ -30,11 +36,20 @@ public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends
 	private ConfigurationReference<N> configurationReference;
 	private ValueReference<T, N> valueReference;
 	private Class<T> clazz;
-	protected ReferencedVirtualConfigImpl(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz) {
-		super("", configType, itemStackSerializerType, serializers);
+	private JsonObject rawJsonData;
+	protected ReferencedVirtualConfigImpl(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz, String rawData) {
+		super(rawData, configType, itemStackSerializerType, serializers);
 		Objects.requireNonNull(clazz);
 		this.clazz = clazz;
 		load();
+		save();
+	}
+
+	protected ReferencedVirtualConfigImpl(ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers, Class<T> clazz, JsonObject rawJsonData) {
+		super("", configType, itemStackSerializerType, serializers);
+		Objects.requireNonNull(clazz);
+		this.clazz = clazz;
+		loadFromJson();
 		save();
 	}
 
@@ -164,6 +179,20 @@ public class ReferencedVirtualConfigImpl<T, N extends ConfigurationNode> extends
 	@Override
 	public boolean hasReferenced() {
 		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void loadFromJson() {
+		updateBuffers();
+		try {
+			configurationReference = (ConfigurationReference<N>) super.selectLoader().loadToReference();
+			// configurationReference.load();
+			configurationReference.set(NodePath.path(), rawJsonData);
+			valueReference = configurationReference.referenceTo(clazz);
+			updateBuffers();
+		} catch (ConfigurateException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

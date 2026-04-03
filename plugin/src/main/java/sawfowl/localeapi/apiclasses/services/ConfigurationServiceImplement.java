@@ -3,7 +3,9 @@ package sawfowl.localeapi.apiclasses.services;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.nio.file.Path;
+import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import org.spongepowered.api.Sponge;
@@ -76,31 +78,31 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	private final ConfigurationOptions SPONGE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SPONGE_SERIALIZER_COLLECTION_VARIANT);
 
 	private geysermc.yaml.YamlConfigurationLoader.Builder createGeyserYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(geysermc.yaml.NodeStyle.BLOCK);
+		return geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(geysermc.yaml.NodeStyle.BLOCK);
 	}
 
 	private YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
+		return YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(NodeStyle.BLOCK);
 	}
 
 	private HoconConfigurationLoader.Builder createHoconConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return HoconConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	private GsonConfigurationLoader.Builder createJsonConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return GsonConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	private JacksonConfigurationLoader.Builder createJacksonConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return JacksonConfigurationLoader.builder().fieldValueSeparatorStyle(FieldValueSeparatorStyle.SPACE_BOTH_SIDES).defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return JacksonConfigurationLoader.builder().fieldValueSeparatorStyle(FieldValueSeparatorStyle.SPACE_BOTH_SIDES).defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	private XmlConfigurationLoader.Builder createXmlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return XmlConfigurationLoader.builder().writesExplicitType(true).defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return XmlConfigurationLoader.builder().writesExplicitType(true).defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	private TomlConfigurationLoader.Builder createTomlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return TomlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : ConfigurationService.mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
+		return TomlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers)));
 	}
 
 	@Override
@@ -129,13 +131,24 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	}
 
 	@Override
-	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type) {
-		return new ReferencedVirtualBuilderImpl<>(type);
+	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type, String rawData) {
+		return new ReferencedVirtualBuilderImpl<>(type, rawData);
+	}
+
+	@Override
+	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type, JsonObject rawData) {
+		return new ReferencedVirtualBuilderImpl<>(type, rawData);
 	}
 
 	@Override
 	public <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(T value) {
 		return new ReferencedVirtualBuilderImpl<>(value);
+	}
+
+	@Override
+	public TypeSerializerCollection mergeSerializers(@NotNull TypeSerializerCollection first, @Nullable TypeSerializerCollection second) {
+		Objects.requireNonNull(first);
+		return second == null ? first : first.childBuilder().registerAll(second).build();
 	}
 
 	@SuppressWarnings("unchecked")

@@ -1,7 +1,6 @@
 package sawfowl.localeapi.api.services;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +12,7 @@ import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
+import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 
 import sawfowl.localeapi.api.ConfigTypes;
@@ -61,7 +61,13 @@ public abstract class ConfigurationService {
 	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.<br>
 	 * See also {@link ConfigSerializable}
 	 */
-	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type);
+	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type, String rawData);
+
+	/**
+	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.<br>
+	 * See also {@link ConfigSerializable}
+	 */
+	public abstract <T> ReferencedVirtualConfigBuilder<T> createVirtualReferencedConfig(Class<T> type, JsonObject rawData);
 
 	/**
 	 * Creating a reference virtual configuration that accepts and returns a serializable object of the specified type.<br>
@@ -105,9 +111,6 @@ public abstract class ConfigurationService {
 	/**
 	 * Combining serializer collections into a single collection.
 	 */
-	public static TypeSerializerCollection mergeSerializers(@NotNull TypeSerializerCollection first, @Nullable TypeSerializerCollection second) {
-		Objects.requireNonNull(first);
-		return second == null ? first : second.childBuilder().registerAll(first).build();
-	}
+	public abstract TypeSerializerCollection mergeSerializers(@NotNull TypeSerializerCollection first, @Nullable TypeSerializerCollection second);
 
 }

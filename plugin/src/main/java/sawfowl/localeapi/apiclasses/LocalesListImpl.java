@@ -49,14 +49,14 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 	private LocalesListImpl(PluginContainer container, Path configDirectory, LocaleService localeService) {
 		this.container = container;
 		if(getConfig() != null) {
-			if(getConfig().getLocalesSettings().getPath().contains("{LOCALEAPI_PATH}")) {
-				if(getConfig().getLocalesSettings().getPath().contains("{PATH_SEPARATOR}")) {
-					if(getConfig().getLocalesSettings().getPath().endsWith("{PATH_SEPARATOR}")) {
-						path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + container.metadata().id());
-					} else path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + File.separator + container.metadata().id());
-				} else path = Path.of(getConfig().getLocalesSettings().getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir() + File.separator + container.metadata().id()));
-			} else if(getConfig().getLocalesSettings().getPath().contains("{PLUGIN_CONFIG_PATH}")) {
-				path = Path.of(getConfig().getLocalesSettings().getPath().replace("{PLUGIN_CONFIG_PATH}", LocaleAPI.getMainConfigDir() + File.separator + container.metadata().id()).replace("{PATH_SEPARATOR}", File.separator));
+			if(getConfig().getLocalesSettings(container).getPath().contains("{LOCALEAPI_PATH}")) {
+				if(getConfig().getLocalesSettings(container).getPath().contains("{PATH_SEPARATOR}")) {
+					if(getConfig().getLocalesSettings(container).getPath().endsWith("{PATH_SEPARATOR}")) {
+						path = Path.of(getConfig().getLocalesSettings(container).getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + container.metadata().id());
+					} else path = Path.of(getConfig().getLocalesSettings(container).getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir()).replace("{PATH_SEPARATOR}", File.separator) + File.separator + container.metadata().id());
+				} else path = Path.of(getConfig().getLocalesSettings(container).getPath().replace("{LOCALEAPI_PATH}", LocaleAPI.getLocaleAPIConfigDir() + File.separator + container.metadata().id()));
+			} else if(getConfig().getLocalesSettings(container).getPath().contains("{PLUGIN_CONFIG_PATH}")) {
+				path = Path.of(getConfig().getLocalesSettings(container).getPath().replace("{PLUGIN_CONFIG_PATH}", LocaleAPI.getMainConfigDir() + File.separator + container.metadata().id()).replace("{PATH_SEPARATOR}", File.separator));
 			} else path = configDirectory.resolve(container.metadata().id());
 		} else path = configDirectory.resolve(container.metadata().id());
 		createFolders(path, path.toFile());
@@ -78,18 +78,18 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 	public PluginLocale createSimpleTranslation(ConfigTypes configType, Locale locale) {
 		Objects.requireNonNull(locale);
 		WatchRunner.pause();
-		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse() && !configType.comparableType(getConfig().getLocalesSettings().getType())) {
-			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings().getType().toString()).toFile().exists()) {
-				locales.put(locale, PluginLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), locale, this));
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings(container).getType();
+		if(getConfig() != null && getConfig().getLocalesSettings(container).isForcedUse() && !configType.comparableType(getConfig().getLocalesSettings(container).getType())) {
+			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings(container).getType().toString()).toFile().exists()) {
+				locales.put(locale, PluginLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), locale, this));
 				return locales.get(locale); 
 			}
-			PluginLocale updated = PluginLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), locale, this);
+			PluginLocale updated = PluginLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), locale, this);
 			PluginLocale old = null;
 			for(File file : path.toFile().listFiles()) {
 				if(!file.getName().contains(locale.toLanguageTag())) continue;
 				ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
-				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings().getType())) continue;
+				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings(container).getType())) continue;
 				if(old == null) {
 					old = PluginLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), locale, this);
 					try {
@@ -116,18 +116,18 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 		Objects.requireNonNull(clazz);
 		WatchRunner.pause();
 		if(reference == null) reference = (Class<T>) clazz;
-		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse()) {
-			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings().getType().toString()).toFile().exists()) {
-				locales.put(locale, ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), clazz, locale));
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings(container).getType();
+		if(getConfig() != null && getConfig().getLocalesSettings(container).isForcedUse()) {
+			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings(container).getType().toString()).toFile().exists()) {
+				locales.put(locale, ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), clazz, locale));
 				return (ReferencedLocale<O>) locales.get(locale); 
 			}
-			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), clazz, locale);
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), clazz, locale);
 			ConfigImpl old = null;
 			for(File file : path.toFile().listFiles()) {
 				if(!file.getName().contains(locale.toLanguageTag())) continue;
 				ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
-				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings().getType())) continue;
+				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings(container).getType())) continue;
 				if(old == null) {
 					old = ConfigImpl.create(path, locale.toLanguageTag(), configType, localeService.getItemStackSerializer(container), updated.getSerializers());
 					//old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), clazz, locale);
@@ -158,18 +158,18 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 		Objects.requireNonNull(object);
 		WatchRunner.pause();
 		if(reference == null) reference = (Class<T>) object.getClass();
-		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings().getType();
-		if(getConfig() != null && getConfig().getLocalesSettings().isForcedUse()) {
-			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings().getType().toString()).toFile().exists()) {
-				locales.put(locale, ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), object, locale));
+		if(configType == null) configType = getConfig() == null ? ConfigTypes.HOCON : getConfig().getLocalesSettings(container).getType();
+		if(getConfig() != null && getConfig().getLocalesSettings(container).isForcedUse()) {
+			if(path.resolve(locale.toLanguageTag() + getConfig().getLocalesSettings(container).getType().toString()).toFile().exists()) {
+				locales.put(locale, ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), object, locale));
 				return (ReferencedLocale<O>) locales.get(locale); 
 			}
-			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings().getType(), localeService.getItemStackSerializer(container), object, locale);
+			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), object, locale);
 			ReferencedLocale<O> old = null;
 			for(File file : path.toFile().listFiles()) {
 				if(!file.getName().contains(locale.toLanguageTag())) continue;
 				ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
-				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings().getType())) continue;
+				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings(container).getType())) continue;
 				if(old == null) {
 					old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), object, locale);
 					old.load();

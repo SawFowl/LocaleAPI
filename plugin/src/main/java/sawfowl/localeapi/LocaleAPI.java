@@ -122,7 +122,7 @@ public class LocaleAPI {
 		if(mainConfig != null) {
 			ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(mainConfig.getName()));
 			config = ConfigurationService.getInstance()
-				.createReferencedConfig(Config.class)
+				.createReferencedConfig(container, Config.class)
 				.setPath(configDirectory)
 				.setName("Config")
 				.setType(type)
@@ -131,7 +131,7 @@ public class LocaleAPI {
 			if(!type.comparableType(getConfig().getConfigSettings().getType())) {
 				ConfigurationNode node = config.getRootNode();
 				config = ConfigurationService.getInstance()
-					.createReferencedConfig(getConfig())
+					.createReferencedConfig(container, getConfig())
 					.setPath(configDirectory)
 					.setName("Config")
 					.setType(getConfig().getConfigSettings().getType())
@@ -152,22 +152,22 @@ public class LocaleAPI {
 		if(!locales.contains(Locales.RU_RU)) locales.createReferencedTranslation(ConfigTypes.HOCON, Locales.RU_RU, LocaleConfig.createRu());
 		((API) localeService).startWatch();
 		if(config == null) config = ConfigurationService.getInstance()
-				.createReferencedConfig(Config.class)
+				.createReferencedConfig(container, Config.class)
 				.setPath(configDirectory)
 				.setName("Config")
 				.setType(ConfigTypes.HOCON)
 				.setItemStackSerializerType(ItemStackSerializerType.JSON)
 				.build();
-		if(getConfig().getLocalesSettings().isForcedUse()) {
+		if(getConfig().getLocalesSettings(container).isForcedUse()) {
 			@SuppressWarnings("unchecked")
 			List<ReferencedLocale<LocaleConfig>> copy = locales.stream().map(locale -> (ReferencedLocale<LocaleConfig>) locale).toList();
 			WatchRunner.pause();
 			copy.forEach(localeConfig -> {
-				if(!localeConfig.getType().comparableType(getConfig().getLocalesSettings().getType())) {
+				if(!localeConfig.getType().comparableType(getConfig().getLocalesSettings(container).getType())) {
 					locales.remove(localeConfig.getLocale());
 					localeConfig.getPath().toFile().delete();
 					try {
-						locales.createReferencedTranslation(getConfig().getLocalesSettings().getType(), localeConfig.getLocale(), localeConfig.get()).getLoader().save(localeConfig.getRootNode());
+						locales.createReferencedTranslation(getConfig().getLocalesSettings(container).getType(), localeConfig.getLocale(), localeConfig.get()).getLoader().save(localeConfig.getRootNode());
 					} catch (ConfigurateException e) {
 						e.printStackTrace();
 					}

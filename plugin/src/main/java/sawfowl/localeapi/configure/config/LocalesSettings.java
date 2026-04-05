@@ -20,6 +20,8 @@ public class LocalesSettings {
 	@Setting("Path")
 	@LocalisedComment(plugin = "localeapi", path = {"ConfigComments", "Path"})
 	private String path = "{LOCALEAPI_PATH}";
+	@Setting("ItemSerialization")
+	private ItemSerialization serialization = new ItemSerialization();
 
 	public ConfigTypes getType() {
 		return type;
@@ -31,6 +33,10 @@ public class LocalesSettings {
 
 	public String getPath() {
 		return path;
+	}
+
+	public ItemSerialization getSerialization() {
+		return serialization;
 	}
 
 }

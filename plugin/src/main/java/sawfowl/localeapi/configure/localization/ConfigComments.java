@@ -25,6 +25,7 @@ public class ConfigComments {
 				+ "{PLUGIN_CONFIG_PATH} - Указывает на каталог плагина, который регистрирует локализации.\n"
 				+ "{PATH_SEPARATOR} - Символ разделяющий каталоги.\n"
 				+ "Пример: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales{PATH_SEPARATOR}";
+		comments.itemSerialization = ItemSerialization.createRu();
 		return comments;
 	}
 
@@ -50,17 +51,7 @@ public class ConfigComments {
 			+ "{PLUGIN_CONFIG_PATH} - Specifies the plugin directory that registers localizations.\n"
 			+ "{PATH_SEPARATOR} - Directory separator symbol.\n"
 			+ "Example: {LOCALEAPI_PATH}{PATH_SEPARATOR}locales{PATH_SEPARATOR}";
-
-	public String getConfigType() {
-		return configType;
-	}
-
-	public String getForcedUse() {
-		return forcedUse;
-	}
-
-	public String getPath() {
-		return path;
-	}
+	@Setting("ItemSerialization")
+	private ItemSerialization itemSerialization = new ItemSerialization();
 
 }

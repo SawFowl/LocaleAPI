@@ -11,6 +11,7 @@ import org.spongepowered.configurate.ConfigurationOptions;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
+import org.spongepowered.plugin.PluginContainer;
 
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
@@ -38,19 +39,19 @@ public abstract class ConfigurationService {
 	/**
 	 * Creating a simple configuration.
 	 */
-	public abstract SimpleConfigBuilder createSimpleConfig();
+	public abstract SimpleConfigBuilder createSimpleConfig(PluginContainer container);
 
 	/**
 	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.<br>
 	 * See also {@link ConfigSerializable}
 	 */
-	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type);
+	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type);
 
 	/**
 	 * Creating a reference configuration that accepts and returns a serializable object of the specified type.<br>
 	 * See also {@link ConfigSerializable}
 	 */
-	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(T value);
+	public abstract <T> ReferencedConfigBuilder<T> createReferencedConfig(PluginContainer container, T value);
 
 	/**
 	 * Creating a simple virtual configuration.
@@ -89,7 +90,7 @@ public abstract class ConfigurationService {
 
 	/**
 	 * Selecting serialization variant for items.<br>
-	 * <b>SIMPLE</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
+	 * <b>SIMPLE</b> - All components will be written in 1 line. This option is the most reliable, but it makes manual editing of components in the configuration much more difficult.<br>
 	 * <b>JSON</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
 	 * <b>SPONGE</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */
@@ -97,7 +98,7 @@ public abstract class ConfigurationService {
 
 	/**
 	 * Selecting serialization variant for items.<br>
-	 * <b>SIMPLE</b> - All NBT tags will be written in 1 line. This option is the most reliable, but significantly complicates manual editing of NBT tags in config.<br>
+	 * <b>SIMPLE</b> - All components will be written in 1 line. This option is the most reliable, but it makes manual editing of components in the configuration much more difficult.<br>
 	 * <b>JSON</b> - Advanced recording. Easier to make manual changes to the config. If you have problems with this type of serialization, you should report errors to the LocaleAPI plugin developer.<br>
 	 * <b>SPONGE</b> - Using Sponge serializer. Some data will be written in 1 line. If you encounter problems with this type of serialization, you should report bugs to the Sponge developers.<br>
 	 */

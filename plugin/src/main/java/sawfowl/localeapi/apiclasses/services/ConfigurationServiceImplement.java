@@ -25,6 +25,7 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.configurate.xml.XmlConfigurationLoader;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
+import org.spongepowered.plugin.PluginContainer;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -111,18 +112,18 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	}
 
 	@Override
-	public SimpleConfigBuilder createSimpleConfig() {
-		return new SimpleBuilderImpl();
+	public SimpleConfigBuilder createSimpleConfig(PluginContainer container) {
+		return new SimpleBuilderImpl(container);
 	}
 
 	@Override
-	public <T> ReferencedConfigBuilder<T> createReferencedConfig(Class<T> type) {
-		return new ReferencedBuilderImpl<>(type);
+	public <T> ReferencedConfigBuilder<T> createReferencedConfig(PluginContainer container, Class<T> type) {
+		return new ReferencedBuilderImpl<>(container, type);
 	}
 
 	@Override
-	public <T> ReferencedConfigBuilder<T> createReferencedConfig(T value) {
-		return new ReferencedBuilderImpl<>(value);
+	public <T> ReferencedConfigBuilder<T> createReferencedConfig(PluginContainer container, T value) {
+		return new ReferencedBuilderImpl<>(container, value);
 	}
 
 	@Override

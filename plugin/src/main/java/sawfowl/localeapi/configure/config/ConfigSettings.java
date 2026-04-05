@@ -17,6 +17,8 @@ public class ConfigSettings {
 	@Setting("ForcedUse")
 	@LocalisedComment(plugin = "localeapi", path = {"ConfigComments", "ForcedUse"})
 	private boolean forcedUse = false;
+	@Setting("ItemSerialization")
+	private ItemSerialization serialization = new ItemSerialization();
 
 	public ConfigTypes getType() {
 		return type;
@@ -24,6 +26,10 @@ public class ConfigSettings {
 
 	public boolean isForcedUse() {
 		return forcedUse;
+	}
+
+	public ItemSerialization getSerialization() {
+		return serialization;
 	}
 
 }

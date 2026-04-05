@@ -33,7 +33,7 @@ public interface Config {
 	 */
 	@Deprecated
 	static Config create(PluginContainer plugin, Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, @Nullable TypeSerializerCollection serializers) {
-		return ConfigurationService.getInstance().createSimpleConfig().setPath(configDir).setName(name).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
+		return ConfigurationService.getInstance().createSimpleConfig(plugin).setPath(configDir).setName(name).setItemStackSerializerType(itemStackSerializerType).addSerializers(serializers).build();
 	}
 
 	/**

@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
+import org.spongepowered.plugin.PluginContainer;
 
 import sawfowl.localeapi.LocaleAPI;
 import sawfowl.localeapi.api.ConfigTypes;
@@ -24,19 +25,22 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 	private ItemStackSerializerType itemStackSerializerType;
 	private TypeSerializerCollection collection;
 	boolean fromFile = false;
-	public ReferencedBuilderImpl(Class<T> type) {
+	private PluginContainer container;
+	public ReferencedBuilderImpl(PluginContainer container, Class<T> type) {
 		Objects.requireNonNull(type);
+		this.container = container;
 		this.clazz = type;
 		this.value = null;
-		if(LocaleAPI.getConfig() != null) this.type = LocaleAPI.getConfig().getConfigSettings().getType();
+		if(LocaleAPI.getConfig() != null) this.type = LocaleAPI.getConfig().getConfigSettings(container).getType();
 	}
 
 	@SuppressWarnings("unchecked")
-	public ReferencedBuilderImpl(T value) {
+	public ReferencedBuilderImpl(PluginContainer container, T value) {
 		Objects.requireNonNull(value);
+		this.container = container;
 		this.value = value;
 		this.clazz = (Class<T>) value.getClass();
-		if(LocaleAPI.getConfig() != null) this.type = LocaleAPI.getConfig().getConfigSettings().getType();
+		if(LocaleAPI.getConfig() != null) this.type = LocaleAPI.getConfig().getConfigSettings(container).getType();
 	}
 
 	@Override
@@ -87,40 +91,45 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 	public ReferencedConfig<T> build() {
 		Objects.requireNonNull(configDir);
 		Objects.requireNonNull(name);
-		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse()) {
-			ReferencedConfig<T> updated;
-			ReferencedConfig<T> old = null;
-			if(value == null) {
-				updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, clazz);
-				for(File file : configDir.toFile().listFiles()) {
-					if(!file.getName().contains(name)) continue;
-					type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
-					if(type  == ConfigTypes.UNKNOWN || type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) continue;
-					if(old == null) {
-						old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
-					} else file.delete();
-				}
-			} else {
-				updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, value);
-				for(File file : configDir.toFile().listFiles()) {
-					if(!file.getName().contains(name)) continue;
-					type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
-					if(type  == ConfigTypes.UNKNOWN || type == LocaleAPI.getConfig().getConfigSettings().getType()) continue;
-					if(old == null) {
-						old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
-					} else file.delete();
-				}
+		if(LocaleAPI.getConfig() != null) {
+			if(LocaleAPI.getConfig().getConfigSettings(container).getSerialization().isForceUse()) {
+				itemStackSerializerType = LocaleAPI.getConfig().getConfigSettings(container).getSerialization().getType();
 			}
-			if(old != null) {
-				updated.save(old.get());
-				try {
-					updated.getLoader().save(old.getRootNode());
-				} catch (ConfigurateException e) {
-					e.printStackTrace();
+			if(LocaleAPI.getConfig().getConfigSettings(container).isForcedUse()) {
+				ReferencedConfig<T> updated;
+				ReferencedConfig<T> old = null;
+				if(value == null) {
+					updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings(container).getType(), itemStackSerializerType, collection, clazz);
+					for(File file : configDir.toFile().listFiles()) {
+						if(!file.getName().contains(name)) continue;
+						type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+						if(type  == ConfigTypes.UNKNOWN || type.comparableType(LocaleAPI.getConfig().getConfigSettings(container).getType())) continue;
+						if(old == null) {
+							old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
+						} else file.delete();
+					}
+				} else {
+					updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings(container).getType(), itemStackSerializerType, collection, value);
+					for(File file : configDir.toFile().listFiles()) {
+						if(!file.getName().contains(name)) continue;
+						type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+						if(type  == ConfigTypes.UNKNOWN || type == LocaleAPI.getConfig().getConfigSettings(container).getType()) continue;
+						if(old == null) {
+							old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
+						} else file.delete();
+					}
 				}
-				old.getPath().toFile().delete();
+				if(old != null) {
+					updated.save(old.get());
+					try {
+						updated.getLoader().save(old.getRootNode());
+					} catch (ConfigurateException e) {
+						e.printStackTrace();
+					}
+					old.getPath().toFile().delete();
+				}
+				return updated;
 			}
-			return updated;
 		}
 		Objects.requireNonNull(type);
 		return value == null

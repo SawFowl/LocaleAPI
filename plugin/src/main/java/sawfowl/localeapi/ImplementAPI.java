@@ -100,6 +100,9 @@ public class ImplementAPI {
 		}
 
 		public ItemStackSerializerType getItemStackSerializer(String plugin) {
+			if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getLocalesSettings(plugin).getSerialization().isForceUse()) {
+				return LocaleAPI.getConfig().getLocalesSettings(plugin).getSerialization().getType();
+			}
 			return stackSerializers.getOrDefault(plugin, ItemStackSerializerType.SPONGE);
 		}
 

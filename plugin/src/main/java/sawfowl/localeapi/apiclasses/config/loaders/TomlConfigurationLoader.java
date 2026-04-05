@@ -6,16 +6,8 @@ import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.json.JsonParser;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import com.electronwill.nightconfig.toml.TomlWriter;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.ConfigurateException;
@@ -25,6 +17,9 @@ import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.loader.CommentHandler;
 import org.spongepowered.configurate.loader.CommentHandlers;
 import org.spongepowered.configurate.loader.ParsingException;
+
+import sawfowl.localeapi.apiclasses.config.converters.AdventurePrimitiveConverter;
+import sawfowl.localeapi.apiclasses.config.converters.CommentProcessor;
 
 import java.io.*;
 import java.util.*;
@@ -46,61 +41,71 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 			// Read entire TOML file into a string
 			StringBuilder content = new StringBuilder();
 			String line;
-			while ((line = reader.readLine()) != null) {
+			while((line = reader.readLine()) != null) {
 				content.append(line).append("\n");
 			}
-			
+
 			// Load TOML with comments
 			CommentedConfig tomlConfig = TomlFormat.instance().createConfig();
 			tomlConfig = TomlFormat.instance().createParser().parse(content.toString());
-			
+
 			// Extract comments separately
 			Map<String, String> comments = extractComments(tomlConfig, "");
-			
+
 			// Convert TOML to JSON string
 			String jsonString = convertTomlToJson(tomlConfig);
-			
+
 			// Parse JSON into Config
 			JsonParser jsonParser = new JsonParser();
 			CommentedConfig nightConfig = TomlFormat.instance().createConfig();
 			jsonParser.parse(jsonString, nightConfig, ParsingMode.REPLACE);
-			
+
 			// Convert to Map and set into node
 			Map<String, Object> dataMap = convertToPlainMap(nightConfig);
 			node.raw(dataMap);
-			
+
 			// Restore comments in the node
-			restoreComments(node, comments, "");
+			CommentProcessor.restoreCommentsToNode(node, comments, "");
 			
 		} catch (Exception e) {
 			throw new ParsingException(node, 0, 0, null, "Error parsing TOML", e);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void saveInternal(ConfigurationNode node, Writer writer) throws ConfigurateException {
 		try {
-			// Get data as Map
+			// Get data from node
 			Object raw = node.raw();
-			if(!(raw instanceof Map)) {
-				throw new ConfigurateException("Root node is not a Map");
+
+			// Handle null value - skip saving
+			if(raw == null) {
+				return;
 			}
-			
-			@SuppressWarnings("unchecked")
-			Map<String, Object> dataMap = (Map<String, Object>) raw;
-			
+
+			// Convert to Map if needed, or handle other types
+			Map<String, Object> dataMap;
+			if(raw instanceof Map) {
+				dataMap = (Map<String, Object>) raw;
+			} else {
+				// Wrap non-Map values in a default root structure
+				dataMap = new LinkedHashMap<>();
+				dataMap.put("value", raw);
+			}
+
 			// Extract comments from the node
-			Map<String, String> comments = extractCommentsFromNode(node, "");
-			
-			// Convert all Adventure objects to strings before saving
-			Map<String, Object> convertedMap = convertValuesToPrimitive(dataMap);
-			
+			Map<String, String> comments = CommentProcessor.extractCommentsFromNode(node, "");
+
+			// Convert all objects to primitives before saving
+			Map<String, Object> convertedMap = AdventurePrimitiveConverter.convertMapValuesToPrimitive(dataMap);
+
 			// Convert Map to TOML Config
 			CommentedConfig nightConfig = convertMapToToml(convertedMap);
-			
+
 			// Restore comments to TOML Config
 			restoreCommentsToConfig(nightConfig, comments, "");
-			
+
 			// Save to TOML
 			TomlWriter tomlWriter = new TomlWriter();
 			StringWriter stringWriter = new StringWriter();
@@ -125,14 +130,10 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 		for(Config.Entry entry : config.entrySet()) {
 			String key = entry.getKey();
 			String fullPath = path.isEmpty() ? key : path + "." + key;
-			
-			if(config instanceof CommentedConfig commented) {
-				String comment = commented.getComment(key);
-				if(comment != null && !comment.isEmpty()) {
-					result.put(fullPath, comment);
-				}
+			String comment = config.getComment(key);
+			if(comment != null && !comment.isEmpty()) {
+				result.put(fullPath, comment);
 			}
-			
 			Object value = entry.getValue();
 			if(value instanceof Config subConfig) {
 				result.putAll(extractComments((CommentedConfig) subConfig, fullPath));
@@ -142,179 +143,29 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 	}
 
 	/**
-	 * Extracts comments from ConfigurationNode
-	 */
-	private Map<String, String> extractCommentsFromNode(ConfigurationNode node, String path) {
-		Map<String, String> result = new LinkedHashMap<>();
-		if(node.isMap()) {
-			for(Map.Entry<Object, ? extends ConfigurationNode> entry : node.childrenMap().entrySet()) {
-				String key = entry.getKey().toString();
-				String fullPath = path.isEmpty() ? key : path + "." + key;
-				ConfigurationNode child = entry.getValue();
-				
-				if(child instanceof CommentedConfigurationNode commented) {
-					String comment = commented.comment();
-					if(comment != null && !comment.isEmpty()) {
-						result.put(fullPath, comment);
-					}
-				}
-				
-				if(child.isMap()) {
-					result.putAll(extractCommentsFromNode(child, fullPath));
-				}
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Restores comments in ConfigurationNode
-	 */
-	private void restoreComments(ConfigurationNode node, Map<String, String> comments, String currentPath) {
-		if(node.isMap()) {
-			for(Map.Entry<Object, ? extends ConfigurationNode> entry : node.childrenMap().entrySet()) {
-				String key = entry.getKey().toString();
-				String fullPath = currentPath.isEmpty() ? key : currentPath + "." + key;
-				ConfigurationNode child = entry.getValue();
-				
-				String comment = comments.get(fullPath);
-				if(comment != null && child instanceof CommentedConfigurationNode commented) {
-					// Format comment
-					if(comment.contains("\n")) {
-						comment = String.join("\n", Arrays.stream(comment.split("\n"))
-							.map(String::trim)
-							.toArray(String[]::new));
-					} else {
-						comment = comment.trim();
-					}
-					commented.comment(comment);
-				}
-				
-				if(child.isMap()) {
-					restoreComments(child, comments, fullPath);
-				}
-			}
-		}
-	}
-
-	/**
 	 * Restores comments to TOML Config
 	 */
 	private void restoreCommentsToConfig(CommentedConfig config, Map<String, String> comments, String currentPath) {
 		for(Config.Entry entry : config.entrySet()) {
 			String key = entry.getKey();
 			String fullPath = currentPath.isEmpty() ? key : currentPath + "." + key;
-			
 			String comment = comments.get(fullPath);
-			if(comment != null && config instanceof CommentedConfig commented) {
+			if(comment != null) {
 				// Format comment for TOML
 				if(comment.contains("\n")) {
-					comment = String.join("\n", Stream.of(comment.split("\n")).map(line -> line.startsWith(" ") ? line : " " + line).toArray(String[]::new));
+					comment = String.join("\n", Stream.of(comment.split("\n"))
+						.map(line -> line.startsWith(" ") ? line : " " + line)
+						.toArray(String[]::new));
 				} else if(!comment.startsWith(" ")) {
 					comment = " " + comment;
 				}
-				commented.setComment(key, comment);
+				config.setComment(key, comment);
 			}
-			
 			Object value = entry.getValue();
 			if(value instanceof CommentedConfig subConfig) {
 				restoreCommentsToConfig(subConfig, comments, fullPath);
 			}
 		}
-	}
-
-	/**
-	 * Recursively converts all objects to primitive types
-	 */
-	private Map<String, Object> convertValuesToPrimitive(Map<String, Object> map) {
-		Map<String, Object> result = new LinkedHashMap<>();
-		for(Map.Entry<String, Object> entry : map.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			result.put(key, convertValueToPrimitive(value));
-		}
-		return result;
-	}
-
-	private boolean isAdventure(Object object) {
-		return object instanceof Component || object instanceof NamedTextColor || object instanceof TextColor || object instanceof TextDecoration || object instanceof Key;
-	}
-
-	/**
-	 * Converts Adventure object to a primitive type
-	 */
-	private Object convertAdventureToPrimitive(Object value) {
-		if(value == null) return null;
-		
-		// Component -> JSON string
-		if(value instanceof Component component) {
-			return GsonComponentSerializer.gson().serialize(component);
-		}
-		
-		// NamedTextColor -> color name
-		if(value instanceof NamedTextColor color) {
-			return color.toString();
-		}
-		
-		// TextColor -> HEX string
-		if(value instanceof TextColor color) {
-			return color.asHexString();
-		}
-		
-		// TextDecoration -> name
-		if(value instanceof TextDecoration decoration) {
-			return decoration.toString();
-		}
-		
-		// Key -> string
-		if(value instanceof Key key) {
-			return key.asString();
-		}
-		
-		return value;
-	}
-
-	/**
-	 * Converts a value to a primitive type
-	 */
-	@SuppressWarnings("unchecked")
-	private Object convertValueToPrimitive(Object value) {
-		if(value == null) return null;
-
-		if(isAdventure(value)) {
-			value = convertAdventureToPrimitive(value);
-		}
-		
-		// Character -> string
-		if(value instanceof Character character) {
-			return character.toString();
-		}
-		
-		// Map -> recursive processing
-		if(value instanceof Map) {
-			return convertValuesToPrimitive((Map<String, Object>) value);
-		}
-		
-		// List -> recursive processing
-		if(value instanceof List) {
-			List<Object> result = new ArrayList<>();
-			for(Object item : (List<?>) value) {
-				result.add(convertValueToPrimitive(item));
-			}
-			return result;
-		}
-		
-		// Array -> recursive processing
-		if(value instanceof Object[]) {
-			Object[] array = (Object[]) value;
-			Object[] result = new Object[array.length];
-			for(int i = 0; i < array.length; i++) {
-				result[i] = convertValueToPrimitive(array[i]);
-			}
-			return result;
-		}
-		
-		return value;
 	}
 
 	/**
@@ -325,7 +176,6 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 		for(Config.Entry entry : config.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			
 			if(value instanceof Config subConfig) {
 				result.put(key, convertToPlainMap(subConfig));
 			} else if(value instanceof List<?> list) {
@@ -361,13 +211,12 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 		for(Config.Entry entry : source.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			
 			if(value instanceof Config subConfig) {
 				JsonObject subJson = new JsonObject();
 				copyConfigToJson(subConfig, subJson);
 				target.add(key, subJson);
 			} else if(value instanceof List<?> list) {
-				JsonArray jsonArray = new JsonArray();
+				com.google.gson.JsonArray jsonArray = new com.google.gson.JsonArray();
 				for(Object item : list) {
 					if(item instanceof Config itemConfig) {
 						JsonObject subJson = new JsonObject();
@@ -405,7 +254,6 @@ public class TomlConfigurationLoader extends AbstractConfigurationLoader<Comment
 		for(Map.Entry<String, Object> entry : map.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			
 			if(value instanceof Map) {
 				result.set(key, convertMapToToml((Map<String, Object>) value));
 			} else if(value instanceof List<?> list) {

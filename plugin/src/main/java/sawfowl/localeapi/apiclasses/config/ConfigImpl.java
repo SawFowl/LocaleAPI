@@ -34,6 +34,7 @@ public class ConfigImpl implements Config {
 	private Path path;
 	private String name;
 	protected TypeSerializerCollection serializers;
+
 	protected ConfigImpl(Path configDir, String name, ConfigTypes configType, ItemStackSerializerType itemStackSerializerType, TypeSerializerCollection serializers) {
 		this.path = configDir.resolve(name + configType.toString());
 		this.type = configType;
@@ -206,8 +207,12 @@ public class ConfigImpl implements Config {
 		return name;
 	}
 
-	protected ItemStackSerializerType getItemStackSerializerType() {
+	public ItemStackSerializerType getItemStackSerializerType() {
 		return itemStackSerializerType;
+	}
+
+	public TypeSerializerCollection getSerializers() {
+		return serializers;
 	}
 
 }

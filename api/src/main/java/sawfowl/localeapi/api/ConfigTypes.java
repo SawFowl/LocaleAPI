@@ -149,11 +149,11 @@ public enum ConfigTypes {
 	}
 
 	public static boolean isValidExtension(String extension) {
-		return !extension.isEmpty() && Stream.of(ConfigTypes.values()).filter(v -> v.getExtension().equals(extension)).findFirst().isPresent();
+		return !extension.isEmpty() && Stream.of(ConfigTypes.values()).filter(v -> v.getExtension().equals(extension) || v.toString().equals(extension)).findFirst().isPresent();
 	}
 
 	public static ConfigTypes getTypeByExtension(String extension) {
-		return Stream.of(ConfigTypes.values()).filter(v -> v.toString().equals(extension) || v.getExtension().equals(extension)).findFirst().orElse(HOCON);
+		return Stream.of(ConfigTypes.values()).filter(v -> v.toString().equals(extension) || v.getExtension().equals(extension)).findFirst().orElse(UNKNOWN);
 	}
 
 	public static String getExtension(String fileName) {

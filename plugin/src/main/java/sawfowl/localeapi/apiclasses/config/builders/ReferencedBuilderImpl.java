@@ -1,5 +1,6 @@
 package sawfowl.localeapi.apiclasses.config.builders;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -22,6 +23,7 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 	private ConfigTypes type;
 	private ItemStackSerializerType itemStackSerializerType;
 	private TypeSerializerCollection collection;
+	boolean fromFile = false;
 	public ReferencedBuilderImpl(Class<T> type) {
 		Objects.requireNonNull(type);
 		this.clazz = type;
@@ -38,6 +40,20 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 	}
 
 	@Override
+	public ReferencedConfigBuilder<T> fromFile(File file) {
+		if(file.exists() && file.toPath().getParent() != null) {
+			setPath(file.toPath().getParent());
+			ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+			if(type != null && type != ConfigTypes.UNKNOWN) {
+				setType(type);
+				setName(file.getName().replace(type.toString(), ""));
+				fromFile = true;
+			}
+		}
+		return this;
+	}
+
+	@Override
 	public ReferencedConfigBuilder<T> setPath(Path configDir) {
 		this.configDir = configDir;
 		return this;
@@ -45,13 +61,13 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 
 	@Override
 	public ReferencedConfigBuilder<T> setName(String name) {
-		this.name = name;
+		if(!fromFile) this.name = name;
 		return this;
 	}
 
 	@Override
 	public ReferencedConfigBuilder<T> setType(ConfigTypes type) {
-		if(type != null) this.type = type;
+		if(type != null && !fromFile) this.type = type;
 		return this;
 	}
 
@@ -71,37 +87,42 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 	public ReferencedConfig<T> build() {
 		Objects.requireNonNull(configDir);
 		Objects.requireNonNull(name);
-		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && !type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) {
+		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse()) {
+			ReferencedConfig<T> updated;
+			ReferencedConfig<T> old = null;
 			if(value == null) {
-				ReferencedConfig<T> updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, clazz);
-				if(configDir.resolve(name + type.toString()).toFile().exists()) {
-					ReferencedConfig<T> old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
-					updated.save(old.get());
-					try {
-						updated.getLoader().save(old.getRootNode());
-					} catch (ConfigurateException e) {
-						e.printStackTrace();
-					}
-					old.getPath().toFile().delete();
-					old = null;
+				updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, clazz);
+				for(File file : configDir.toFile().listFiles()) {
+					if(!file.getName().contains(name)) continue;
+					type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+					if(type  == ConfigTypes.UNKNOWN || type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) continue;
+					if(old == null) {
+						old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
+					} else file.delete();
 				}
-				return updated;
 			} else {
-				ReferencedConfig<T> updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, value);
-				if(configDir.resolve(name + type.toString()).toFile().exists()) {
-					ReferencedConfig<T> old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, value);
-					updated.save(old.get());
-					try {
-						updated.getLoader().save(old.getRootNode());
-					} catch (ConfigurateException e) {
-						e.printStackTrace();
-					}
-					old.getPath().toFile().delete();
-					old = null;
+				updated = ReferencedConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection, value);
+				for(File file : configDir.toFile().listFiles()) {
+					if(!file.getName().contains(name)) continue;
+					type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+					if(type  == ConfigTypes.UNKNOWN || type == LocaleAPI.getConfig().getConfigSettings().getType()) continue;
+					if(old == null) {
+						old = ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz);
+					} else file.delete();
 				}
-				return updated;
 			}
-		} else Objects.requireNonNull(type);
+			if(old != null) {
+				updated.save(old.get());
+				try {
+					updated.getLoader().save(old.getRootNode());
+				} catch (ConfigurateException e) {
+					e.printStackTrace();
+				}
+				old.getPath().toFile().delete();
+			}
+			return updated;
+		}
+		Objects.requireNonNull(type);
 		return value == null
 			?
 			ReferencedConfigImpl.create(configDir, name, type, itemStackSerializerType, collection, clazz)

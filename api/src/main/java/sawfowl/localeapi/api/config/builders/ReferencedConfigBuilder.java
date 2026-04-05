@@ -11,17 +11,11 @@ import sawfowl.localeapi.api.serializetools.ItemStackSerializerType;
 
 public interface ReferencedConfigBuilder<T> {
 
-	default ReferencedConfigBuilder<T> fromFile(File file) {
-		if(file.exists() && file.toPath().getParent() != null) {
-			setPath(file.toPath().getParent());
-			ConfigTypes type = ConfigTypes.find(ConfigTypes.getExtension(file.getName()));
-			if(type != null) {
-				setType(type);
-				setName(file.getName().replace(type.toString(), ""));
-			}
-		}
-		return this;
-	}
+	/**
+	 * Loading the configuration from a file.<br>
+	 * After using this method, you will not be able to change the file name and configuration type in this constructor.
+	 */
+	ReferencedConfigBuilder<T> fromFile(File file);
 
 	/**
 	 * @return The path to the configuration file.

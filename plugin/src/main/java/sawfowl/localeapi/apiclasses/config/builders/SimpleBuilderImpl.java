@@ -1,5 +1,6 @@
 package sawfowl.localeapi.apiclasses.config.builders;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -58,20 +59,29 @@ public class SimpleBuilderImpl implements SimpleConfigBuilder {
 	public Config build() {
 		Objects.requireNonNull(configDir);
 		Objects.requireNonNull(name);
-		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse() && type != null && !type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) {
+		if(LocaleAPI.getConfig() != null && LocaleAPI.getConfig().getConfigSettings().isForcedUse()) {
 			Config updated = ConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection);
-			if(configDir.resolve(name + type.toString()).toFile().exists()) {
-				Config old = ConfigImpl.create(configDir, name, type, itemStackSerializerType, collection);
+			Config old = null;
+			updated = ConfigImpl.create(configDir, name, LocaleAPI.getConfig().getConfigSettings().getType(), itemStackSerializerType, collection);
+			for(File file : configDir.toFile().listFiles()) {
+				if(!file.getName().contains(name)) continue;
+				type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
+				if(type  == ConfigTypes.UNKNOWN || type.comparableType(LocaleAPI.getConfig().getConfigSettings().getType())) continue;
+				if(old == null) {
+					old = ConfigImpl.create(configDir, name, type, itemStackSerializerType, collection);;
+				} else file.delete();
+			}
+			if(old != null) {
 				try {
 					updated.getLoader().save(old.getRootNode());
 				} catch (ConfigurateException e) {
 					e.printStackTrace();
 				}
 				old.getPath().toFile().delete();
-				old = null;
 			}
 			return updated;
-		} else Objects.requireNonNull(type);
+		}
+		Objects.requireNonNull(type);
 		return ConfigImpl.create(configDir, name, type, itemStackSerializerType, collection);
 	}
 

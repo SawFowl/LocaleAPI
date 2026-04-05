@@ -32,7 +32,7 @@ shadowJar {
 	exclude 'org/spongepowered/configurate/util/**'
 	exclude 'org/spongepowered/configurate/*.class'
 	exclude 'io/**'
-    exclude '**/package-info.class'
+	exclude '**/package-info.class'
 
 	mergeServiceFiles()
 

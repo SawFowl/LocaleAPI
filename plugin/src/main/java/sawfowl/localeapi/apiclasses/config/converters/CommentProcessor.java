@@ -1,4 +1,3 @@
-// ==================== Class: CommentProcessor ====================
 package sawfowl.localeapi.apiclasses.config.converters;
 
 import org.spongepowered.configurate.CommentedConfigurationNode;
@@ -24,7 +23,6 @@ public final class CommentProcessor {
 				String key = entry.getKey().toString();
 				String fullPath = path.isEmpty() ? key : path + "." + key;
 				ConfigurationNode child = entry.getValue();
-				
 				if(child instanceof CommentedConfigurationNode commented) {
 					String comment = commented.comment();
 					if(comment != null && !comment.isEmpty()) {

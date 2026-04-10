@@ -2,6 +2,8 @@ package sawfowl.localeapi.apiclasses.config.converters;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -24,7 +26,11 @@ public final class AdventurePrimitiveConverter {
 			|| object instanceof NamedTextColor 
 			|| object instanceof TextColor 
 			|| object instanceof TextDecoration 
-			|| object instanceof Key;
+			|| object instanceof Key
+			|| object instanceof ClickEvent
+			|| object instanceof ClickEvent.Action
+			|| object instanceof HoverEvent
+			|| object instanceof HoverEvent.Action;
 	}
 
 	/**
@@ -53,16 +59,51 @@ public final class AdventurePrimitiveConverter {
 			return key.asString();
 		}
 
+		if(value instanceof ClickEvent.Action action) {
+			return action.toString();
+		}
+
+		if(value instanceof ClickEvent clickEvent) {
+			Map<String, Object> map = new LinkedHashMap<>();
+			map.put("action", clickEvent.action().toString());
+			
+			Object payload = clickEvent.payload();
+			if(payload instanceof Component) {
+				map.put("value", GsonComponentSerializer.gson().serialize((Component) payload));
+			} else {
+				map.put("value", payload.toString());
+			}
+			return map;
+		}
+
+		if(value instanceof HoverEvent.Action<?> action) {
+			return action.toString();
+		}
+
+		if(value instanceof HoverEvent<?> hoverEvent) {
+			Map<String, Object> map = new LinkedHashMap<>();
+			map.put("action", hoverEvent.action().toString());
+			
+			Object content = hoverEvent.value();
+			if(content instanceof Component) {
+				map.put("value", GsonComponentSerializer.gson().serialize((Component) content));
+			} else {
+				map.put("value", content.toString());
+			}
+			return map;
+		}
+
 		return value;
 	}
 
 	/**
 	 * Recursively converts all Adventure objects in a Map to primitive types
+	 * Supports maps with any key type (converts keys to strings)
 	 */
-	public static Map<String, Object> convertMapValuesToPrimitive(Map<String, Object> map) {
+	public static Map<String, Object> convertMapValuesToPrimitive(Map<?, ?> map) {
 		Map<String, Object> result = new LinkedHashMap<>();
-		for(Map.Entry<String, Object> entry : map.entrySet()) {
-			String key = entry.getKey();
+		for(Map.Entry<?, ?> entry : map.entrySet()) {
+			String key = entry.getKey().toString();
 			Object value = entry.getValue();
 			result.put(key, convertValueToPrimitive(value));
 		}
@@ -72,7 +113,6 @@ public final class AdventurePrimitiveConverter {
 	/**
 	 * Converts a value to a primitive type (recursive)
 	 */
-	@SuppressWarnings("unchecked")
 	public static Object convertValueToPrimitive(Object value) {
 		if(value == null) return null;
 
@@ -89,7 +129,7 @@ public final class AdventurePrimitiveConverter {
 		}
 
 		if(value instanceof Map) {
-			return convertMapValuesToPrimitive((Map<String, Object>) value);
+			return convertMapValuesToPrimitive((Map<?, ?>) value);
 		}
 
 		if(value instanceof List) {
@@ -111,5 +151,4 @@ public final class AdventurePrimitiveConverter {
 
 		return value;
 	}
-
 }

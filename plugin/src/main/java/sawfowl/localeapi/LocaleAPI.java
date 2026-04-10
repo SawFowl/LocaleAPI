@@ -128,13 +128,13 @@ public class LocaleAPI {
 				.setType(type)
 				.setItemStackSerializerType(ItemStackSerializerType.JSON)
 				.build();
-			if(!type.comparableType(getConfig().getConfigSettings().getType())) {
+			if(!type.comparableType(getConfig().getConfigSettings(pluginContainer).getType())) {
 				ConfigurationNode node = config.getRootNode();
 				config = ConfigurationService.getInstance()
 					.createReferencedConfig(container, getConfig())
 					.setPath(configDirectory)
 					.setName("Config")
-					.setType(getConfig().getConfigSettings().getType())
+					.setType(getConfig().getConfigSettings(pluginContainer).getType())
 					.setItemStackSerializerType(ItemStackSerializerType.JSON)
 					.build();
 				try {

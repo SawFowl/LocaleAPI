@@ -24,7 +24,6 @@ import sawfowl.localeapi.api.Translation;
 import sawfowl.localeapi.api.config.locale.PluginLocale;
 import sawfowl.localeapi.api.config.locale.ReferencedLocale;
 import sawfowl.localeapi.api.services.LocaleService;
-import sawfowl.localeapi.apiclasses.config.ConfigImpl;
 import sawfowl.localeapi.apiclasses.config.locale.PluginLocaleImpl;
 import sawfowl.localeapi.apiclasses.config.locale.ReferencedLocaleImpl;
 import sawfowl.localeapi.configure.Config;
@@ -103,6 +102,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				} else file.delete();
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
+			updated.load();
 			locales.put(locale, updated);
 		} else locales.put(locale, PluginLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), locale, this));
 		WatchRunner.pause();
@@ -123,14 +123,14 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				return (ReferencedLocale<O>) locales.get(locale); 
 			}
 			ReferencedLocaleImpl<O> updated = ReferencedLocaleImpl.create(path, getConfig().getLocalesSettings(container).getType(), localeService.getItemStackSerializer(container), clazz, locale);
-			ConfigImpl old = null;
+			ReferencedLocale<O> old = null;
 			for(File file : path.toFile().listFiles()) {
 				if(!file.getName().contains(locale.toLanguageTag())) continue;
 				ConfigTypes type = ConfigTypes.getTypeByExtension(ConfigTypes.getExtension(file.getName()));
 				if(type  == ConfigTypes.UNKNOWN || type.comparableType(getConfig().getLocalesSettings(container).getType())) continue;
 				if(old == null) {
-					old = ConfigImpl.create(path, locale.toLanguageTag(), configType, localeService.getItemStackSerializer(container), updated.getSerializers());
-					//old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), clazz, locale);
+					//old = ConfigImpl.create(path, locale.toLanguageTag(), configType, localeService.getItemStackSerializer(container), updated.getSerializers());
+					old = ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), clazz, locale);
 					old.load();
 					//updated.save(old.get());
 					try {
@@ -144,6 +144,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				} else file.delete();
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
+			updated.load();
 			locales.put(locale, updated);
 		} else locales.put(locale, ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), clazz, locale));
 		if(reference == null) reference = (Class<T>) clazz;
@@ -185,6 +186,7 @@ public class LocalesListImpl<T extends Translation> implements LocalesList<T> {
 				} else file.delete();
 			}
 			if(locales.containsKey(locale)) locales.remove(locale);
+			updated.load();
 			locales.put(locale, updated);
 		} else locales.put(locale, ReferencedLocaleImpl.create(path, configType, localeService.getItemStackSerializer(container), object, locale));
 		if(reference == null) reference = (Class<T>) object.getClass();

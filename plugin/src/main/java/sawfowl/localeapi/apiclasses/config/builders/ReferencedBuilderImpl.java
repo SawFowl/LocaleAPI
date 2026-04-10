@@ -128,6 +128,7 @@ public class ReferencedBuilderImpl<T> implements ReferencedConfigBuilder<T> {
 					}
 					old.getPath().toFile().delete();
 				}
+				updated.load();
 				return updated;
 			}
 		}

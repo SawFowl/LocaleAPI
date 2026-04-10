@@ -86,6 +86,7 @@ public class SimpleBuilderImpl implements SimpleConfigBuilder {
 					}
 					old.getPath().toFile().delete();
 				}
+				updated.load();
 				return updated;
 			}
 		}

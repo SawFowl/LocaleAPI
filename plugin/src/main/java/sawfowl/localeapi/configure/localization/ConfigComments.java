@@ -18,7 +18,7 @@ public class ConfigComments {
 				+ "GeyserYaml - Альтернативный вид конфигурации Sponge. Использует блочную структуру. Наиболее удобен для чтения человеку. Поддерживает комментарии. Поддержка данного формата является экспериментальной.\n"
 				+ "Jackson - Альтернативный вид конфигурации в формате json Sponge. Не поддерживает комментарии.\n"
 				+ "XML - Альтернативный вид конфигурации Sponge. Поддерживает комментарии, но не удобен для чтения.\n"
-				+ "Toml - Использование созданного в LocaleAPI загрузчика конфигурации формата Toml. Удобен для чтения. Поддерживает комментарии.";
+				+ "Toml - Использование созданного в LocaleAPI загрузчика конфигурации формата Toml. Удобен для чтения. Поддерживает комментарии. Не рекомендуется для локализаций, так как при последующей конвертации из него в любой другой формат могут возникнуть ошибки из-за несовместимости Toml с форматом данных json.";
 		comments.forcedUse = "Принудительное применение указанного тут типа конфигурации к другим плагинам, которые используют возможности LocaleAPI.";
 		comments.path = "Путь по умолчанию к локализациям.\n"
 				+ "{LOCALEAPI_PATH} - Указывает на каталог конфигурации плагина LocaleAPI.\n"
@@ -42,7 +42,7 @@ public class ConfigComments {
 			+ "GeyserYaml - An alternative Sponge configuration format that uses a block structure and is easy to read. It supports comments. Support for this format is experimental.\n"
 			+ "Jackson - An alternative Sponge configuration format in json format that does not support comments.\n"
 			+ "XML - An alternative Sponge configuration view that supports comments but is not easy to read.\n"
-			+ "Toml - Using the LocaleAPI-generated Toml format configuration loader. Easy to read. Supports comments.";
+			+ "Toml - Using the LocaleAPI-generated Toml format configuration loader. Easy to read. Supports comments. It is not recommended for localizations, as errors may occur during subsequent conversion from it to any other format due to the incompatibility of Toml with the json data format.";
 	@Setting("ForcedUse")
 	private String forcedUse = "Forces the specified configuration type to be applied to other plugins that use the LocaleAPI.";
 	@Setting("Path")

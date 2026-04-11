@@ -1,11 +1,11 @@
 package sawfowl.localeapi.apiclasses.config.loaders;
 
-import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
-import com.electronwill.nightconfig.core.io.ParsingMode;
-import com.electronwill.nightconfig.json.JsonParser;
-import com.electronwill.nightconfig.toml.TomlFormat;
-import com.electronwill.nightconfig.toml.TomlWriter;
+import libs.localeapi.com.electronwill.nightconfig.core.CommentedConfig;
+import libs.localeapi.com.electronwill.nightconfig.core.Config;
+import libs.localeapi.com.electronwill.nightconfig.core.io.ParsingMode;
+import libs.localeapi.com.electronwill.nightconfig.json.JsonParser;
+import libs.localeapi.com.electronwill.nightconfig.toml.TomlFormat;
+import libs.localeapi.com.electronwill.nightconfig.toml.TomlWriter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 

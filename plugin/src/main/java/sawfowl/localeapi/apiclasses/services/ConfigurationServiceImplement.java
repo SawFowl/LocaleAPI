@@ -80,8 +80,8 @@ public class ConfigurationServiceImplement extends ConfigurationService {
 	private final ConfigurationOptions JSON_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(JSON_SERIALIZER_COLLECTION_VARIANT);
 	private final ConfigurationOptions SPONGE_OPTIONS_VARIANT = ConfigurationOptions.defaults().serializers(SPONGE_SERIALIZER_COLLECTION_VARIANT);
 
-	private geysermc.yaml.YamlConfigurationLoader.Builder createGeyserYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
-		return geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(geysermc.yaml.NodeStyle.BLOCK);
+	private libs.localeapi.geysermc.yaml.YamlConfigurationLoader.Builder createGeyserYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {
+		return libs.localeapi.geysermc.yaml.YamlConfigurationLoader.builder().defaultOptions(options -> options.serializers(serializerType == null ? otherSerializers == null ? DEFAULT : otherSerializers : mergeSerializers(selectSerializersCollection(serializerType), otherSerializers))).nodeStyle(libs.localeapi.geysermc.yaml.NodeStyle.BLOCK);
 	}
 
 	private YamlConfigurationLoader.Builder createYamlConfigurationLoader(ItemStackSerializerType serializerType, @Nullable TypeSerializerCollection otherSerializers) {

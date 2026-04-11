@@ -1,5 +1,6 @@
 plugins {
 	id("com.gradleup.shadow") version "9.0.0-beta4"
+	id("eclipse")
 }
 
 dependencies {
@@ -11,6 +12,9 @@ dependencies {
 }
 
 shadowJar {
+	// Relocate NightConfig to avoid conflicts
+	relocate 'com.electronwill', 'libs.localeapi.com.electronwill'
+	
 	exclude 'com/fasterxml/jackson/**'
 	exclude 'org/spongepowered/configurate/loader/**'
 	exclude 'org/spongepowered/configurate/objectmapping/**'
@@ -38,10 +42,12 @@ eclipse {
 	classpath {
 		file {
 			whenMerged { classpath ->
+				// Удаляем все обычные библиотеки из classpath
 				classpath.entries.removeAll { entry ->
 					entry.path.contains('jar') && entry.kind == 'lib'
 				}
 
+				// Добавляем только shadowJar
 				def shadowJarEntry = new org.gradle.plugins.ide.eclipse.model.Library(
 					fileReference(tasks.shadowJar.archiveFile.get().asFile)
 				)
@@ -52,6 +58,7 @@ eclipse {
 	}
 }
 
+// Отключаем обычный JAR, используем только shadowJar
 tasks.withType(Jar).configureEach {
 	if (it.name == 'jar') {
 		it.enabled = false

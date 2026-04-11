@@ -7,18 +7,18 @@ dependencies {
 }
 
 shadowJar {
-	relocate('org.spongepowered.configurate', 'geysermc') {
+	relocate('org.spongepowered.configurate', 'libs.localeapi.geysermc') {
 		include 'org.spongepowered.configurate.CommentedConfigurationNode.class'
 		// Исключаем ConfigurationLoader и связанные с ним классы
 		exclude 'org.spongepowered.configurate.ConfigurationLoader.class'
 		exclude 'org.spongepowered.configurate.ConfigurationLoader*'
 	}
 	
-	relocate('org.spongepowered.configurate.yaml', 'geysermc.yaml') {
+	relocate('org.spongepowered.configurate.yaml', 'libs.localeapi.geysermc.yaml') {
 		include 'org.spongepowered.configurate.yaml.**'
 	}
 	
-	relocate('org.spongepowered.configurate.loader', 'geysermc.loader') {
+	relocate('org.spongepowered.configurate.loader', 'libs.localeapi.geysermc.loader') {
 		include 'org.spongepowered.configurate.loader.**'
 		exclude 'org.spongepowered.configurate.loader.ConfigurationLoader.class'
 		exclude 'org.spongepowered.configurate.loader.ConfigurationLoader*'

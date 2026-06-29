@@ -39,19 +39,3 @@ public class Main {
 	}
 }
 ```
-
-## Gradle
-
-```gradle
-repositories {
-	...
-	maven { 
-		name = "AspectMaven"
-		url 'https://maven.aspect-realms.ru/repository/maven-public/' 
-	}
-}
-dependencies {
-	...
-	implementation 'com.github.SawFowl:LocaleAPI:6.0'
-}
-```

@@ -21,7 +21,7 @@ public final class PlainItemStackSerializer implements TypeSerializer<ItemStack>
 	@Override
 	public ItemStack deserialize(Type type, ConfigurationNode node) throws SerializationException {
 		if(!node.node("ComponentsMap").virtual() && node.node("ComponentsMap").isMap()) return ConfigurationService.getInstance().selectSerializersCollection(ItemStackSerializerType.JSON).get(ItemStack.class).deserialize(type, node);
-		if((!node.node("UnsafeData").virtual() && !node.node("UnsafeData").empty() && node.node("UnsafeData").isMap()) || (!node.node("components").virtual() && !node.node("components").empty() && node.node("components").isMap())) return ConfigurationService.getInstance().selectSerializersCollection(ItemStackSerializerType.SPONGE).get(ItemStack.class).deserialize(type, node);
+		if((!node.node("Data").virtual() && !node.node("Data").empty() && node.node("Data").isMap())) return ConfigurationService.getInstance().selectSerializersCollection(ItemStackSerializerType.SPONGE).get(ItemStack.class).deserialize(type, node);
 		return node.get(SerializedItemStack.class).getItemStack();
 	}
 

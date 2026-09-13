@@ -103,8 +103,6 @@ public class SerializedItemStack implements PluginComponent {
 	private String components;
 	@Setting("ComponentsMap")
 	private JsonObject jsonComponents;
-	@Setting("NBT")
-	private String nbt;
 	private transient ItemStack itemStack;
 	private transient ComponentUtil tagUtil;
 	private transient DataContainer itemContainer = null;
@@ -141,19 +139,16 @@ public class SerializedItemStack implements PluginComponent {
 		if(tagUtil != null) {
 			tagUtil = null;
 		}
-		if(itemStack != null) return itemStack.copy();
+		//if(itemStack != null) return itemStack.copy();
 		if(getItemType().isPresent()) {
 			itemStack = ItemStack.of(getItemType().get());
 			itemStack.setQuantity(itemQuantity);
 			if(itemContainer == null) itemContainer = itemStack.toContainer();
 			try {
-				if(nbt != null && !nbt.equals("")) {
-					itemContainer.set(DataQuery.of("UnsafeData"), DataFormats.JSON.get().read(nbt));
-				}
 				if(components != null && !components.equals("")) {
-					itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(components));
+					itemContainer.set(DataQuery.of(ComponentUtil.DATA, ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(components));
 				} else if(jsonComponents != null && !jsonComponents.isEmpty()) {
-					itemContainer.set(DataQuery.of(ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(jsonComponents.toString()));
+					itemContainer.set(DataQuery.of(ComponentUtil.DATA, ComponentUtil.COMPONENTS), DataFormats.JSON.get().read(jsonComponents.toString()));
 				}
 			} catch (InvalidDataException | IOException e) {
 				e.printStackTrace();
@@ -246,9 +241,9 @@ public class SerializedItemStack implements PluginComponent {
 	private void serialize(ItemStack itemStack) {
 		itemType = RegistryTypes.ITEM_TYPE.get().valueKey(itemStack.type()).asString();
 		itemQuantity = itemStack.quantity();
-		if(itemStack.toContainer().get(DataQuery.of(ComponentUtil.COMPONENTS)).isPresent()) {
+		if(itemStack.toContainer().get(DataQuery.of(ComponentUtil.DATA, ComponentUtil.COMPONENTS)).isPresent()) {
 			try {
-				components = DataFormats.JSON.get().write((DataView) (itemContainer = itemStack.toContainer()).get(DataQuery.of(ComponentUtil.COMPONENTS)).get());
+				components = DataFormats.JSON.get().write((DataView) (itemContainer = itemStack.toContainer()).get(DataQuery.of(ComponentUtil.DATA, ComponentUtil.COMPONENTS)).get());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -276,7 +271,7 @@ public class SerializedItemStack implements PluginComponent {
 			itemStack = null;
 			jsonComponents = null;
 			try {
-				components = DataFormats.JSON.get().write((DataView) itemContainer.get(DataQuery.of(ComponentUtil.COMPONENTS)).get());
+				components = DataFormats.JSON.get().write((DataView) itemContainer.get(DataQuery.of(ComponentUtil.DATA, ComponentUtil.COMPONENTS)).get());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -329,7 +324,7 @@ public class SerializedItemStack implements PluginComponent {
 			}
 			if(json == null) return this;
 			checkContainer();
-			putJsonObject(json, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container), key);
+			putJsonObject(json, DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container), key);
 			itemStack = null;
 			getItemStack();
 			return this;
@@ -339,19 +334,19 @@ public class SerializedItemStack implements PluginComponent {
 		public ComponentUtil removeComponent(PluginContainer container, String key) {
 			checkContainer();
 			if(itemContainer.contains(createPath(container, key))) itemContainer.remove(createPath(container, key));
-			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)))) {
-				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).get()).isEmpty()) {
-					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)));
+			if(itemContainer.contains(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)))) {
+				if(((DataView) itemContainer.get(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).get()).isEmpty()) {
+					itemContainer.remove(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container)));
 				}
 			}
-			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS))) {
-				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS)).get()).isEmpty()) {
-					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS));
+			if(itemContainer.contains(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS))) {
+				if(((DataView) itemContainer.get(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS)).get()).isEmpty()) {
+					itemContainer.remove(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS));
 				}
 			}
-			if(itemContainer.contains(createPath(COMPONENTS, CUSTOM_DATA))) {
-				if(((DataView) itemContainer.get(createPath(COMPONENTS, CUSTOM_DATA)).get()).isEmpty()) {
-					itemContainer.remove(createPath(COMPONENTS, CUSTOM_DATA));
+			if(itemContainer.contains(createPath(DATA, COMPONENTS, CUSTOM_DATA))) {
+				if(((DataView) itemContainer.get(createPath(DATA, COMPONENTS, CUSTOM_DATA)).get()).isEmpty()) {
+					itemContainer.remove(createPath(DATA, COMPONENTS, CUSTOM_DATA));
 				}
 			}
 			updateNbt();
@@ -429,12 +424,12 @@ public class SerializedItemStack implements PluginComponent {
 
 		@Override
 		public Set<String> getAllKeys(PluginContainer container) {
-			return getItemStack().toContainer().get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).map(data -> ((DataView) data).keys(false).stream().map(q -> q.asString(';')).collect(Collectors.toSet())).orElse(new HashSet<String>());
+			return getItemStack().toContainer().get(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).map(data -> ((DataView) data).keys(false).stream().map(q -> q.asString(';')).collect(Collectors.toSet())).orElse(new HashSet<String>());
 		}
 
 		@Override
 		public int size(PluginContainer container) {
-			return getItemStack().toContainer().get(createPath(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).map(data -> ((DataView) data).keys(false).size()).orElse(0);
+			return getItemStack().toContainer().get(createPath(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(container))).map(data -> ((DataView) data).keys(false).size()).orElse(0);
 		}
 
 		private String getPluginId(PluginContainer container) {
@@ -442,7 +437,7 @@ public class SerializedItemStack implements PluginComponent {
 		}
 
 		private DataQuery createPath(PluginContainer plugin, String key) {
-			return DataQuery.of(COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(plugin), key);
+			return DataQuery.of(DATA, COMPONENTS, CUSTOM_DATA, PLUGINCOMPONENTS, getPluginId(plugin), key);
 		}
 
 		private DataQuery createPath(String... path) {

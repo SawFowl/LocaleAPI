@@ -121,7 +121,7 @@ public class TextImpl implements Text {
 
 	@Override
 	public Text createCallBack(Runnable runnable) {
-		return createCallBack(cause -> {
+		return createCallBack(_ -> {
 			runnable.run();
 		});
 	}

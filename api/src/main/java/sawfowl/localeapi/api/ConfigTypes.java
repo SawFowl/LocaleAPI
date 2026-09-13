@@ -114,16 +114,6 @@ public enum ConfigTypes {
 			return other == this || other == YAML;
 		}
 	},
-	/**PROPERTIES(".properties") {
-		@Override
-		public String toString() {
-			return ".properties";
-		}
-		@Override
-		public String getExtension() {
-			return "properties";
-		}
-	}*/
 	UNKNOWN(""){
 		@Override
 		public String getTypeName() {

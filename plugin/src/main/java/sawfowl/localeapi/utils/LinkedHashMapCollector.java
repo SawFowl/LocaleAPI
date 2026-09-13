@@ -46,7 +46,7 @@ public class LinkedHashMapCollector {
 	}
 
 	private static <T> BinaryOperator<T> throwingMerger() {
-		return (u, v) -> {
+		return (u, _) -> {
 			throw new IllegalStateException(String.format("Duplicate key %s", u));
 		};
 	}

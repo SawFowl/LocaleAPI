@@ -21,7 +21,7 @@ public class TextUtils {
 	 * It is used {@link #createCallBack(Component, Consumer)}
 	 */
 	public static Component createCallBack(Component component, Runnable runnable) {
-		return createCallBack(component, cause -> {
+		return createCallBack(component, _ -> {
 			runnable.run();
 		});
 	}

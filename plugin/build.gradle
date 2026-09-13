@@ -7,6 +7,7 @@ dependencies {
 	implementation project(":shading-geyser")
 	implementation project(":shading-configure")
 	implementation project(":api")
+	implementation "org.apache.commons:commons-lang3:${lang3}"
 	implementation "org.spongepowered:spongeapi:${api}"
 	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
 }

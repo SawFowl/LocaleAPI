@@ -13,9 +13,12 @@ import com.google.gson.JsonObject;
 
 public interface ComponentUtil {
 
-	static String COMPONENTS = "components";
-	static String CUSTOM_DATA = "minecraft:custom_data";
+	static final String DATA = "Data";
+	static final String COMPONENTS = "components";
+	static final String CUSTOM_DATA = "minecraft:custom_data";
 	static String PLUGINCOMPONENTS = "PluginComponents";
+
+	static final DataQuery COMPONENTS_PATH = DataQuery.of(DATA, COMPONENTS);
 
 	/**
 	 * Checks if a component is present in the item.

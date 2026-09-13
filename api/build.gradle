@@ -1,4 +1,5 @@
 dependencies {
+	implementation "org.apache.commons:commons-lang3:${lang3}"
 	implementation "org.spongepowered:spongeapi:${api}"
 	implementation "net.kyori:adventure-serializer-configurate4:${adventure}"
 }
@@ -29,7 +30,7 @@ configurations {
 
 javadoc {
 	options.encoding = 'UTF-8'
-	options.links("https://jd.spongepowered.org/spongeapi/${api}")
+	//options.links("https://jd.spongepowered.org/spongeapi/${api}")
 	options.links("https://jd.advntr.dev/api/4.16.0/")
 	source configurations.doc.collect { zipTree(it) }
 	include 'sawfowl/localeapi/api/*.java'
